@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Jost:ital,wght@0,100..900;1,100..900&family=Roboto+Slab:wght@100..900&display=swap');
+
+/* ============================================
+   MIKAEL BARBER — CSS Variables & Global Reset
+   ============================================ */
+
+
+:root {
+  /* Paleta principal */
+  --gold:          #C9A84C;
+  --gold-light:    #E8C96A;
+  --gold-dark:     #A07830;
+  --gold-faint:    rgba(201, 168, 76, 0.08);
+  --gold-subtle:   rgba(201, 168, 76, 0.20);
+  --gold-border:   rgba(201, 168, 76, 0.30);
+
+  --red:           #8B1A1A;
+  --red-light:     #B22222;
+  --red-dark:      #5C1010;
+  --red-faint:     rgba(139, 26, 26, 0.20);
+
+  --black:         #090909;
+  --black-2:       #0F0F0F;
+  --black-3:       #141414;
+  --black-4:       #1C1C1C;
+  --black-5:       #242424;
+
+  --white:         #F5F0E8;
+  --white-2:       #EDE8DE;
+  --white-dim:     rgba(245, 240, 232, 0.75);
+
+  --gray:          #5A5A5A;
+  --gray-2:        #3A3A3A;
+  --gray-light:    #888;
+
+  /* Tipografia */
+  --font-display:  'Cinzel', Georgia, serif;
+  --font-body:     'Raleway', sans-serif;
+
+  /* Bordas */
+  --border-gold:   1px solid var(--gold-border);
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.06);
+
+  /* Raios */
+  --radius-sm: 0px;
+  --radius-md: 2px;
+
+  /* Sombras */
+  --shadow-gold: 0 0 40px rgba(201, 168, 76, 0.06);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* Transições */
+  --transition: all 0.3s ease;
+}
+
+/* ─── Reset ─────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
+/* ─── Animações globais ──────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.fade-in  { animation: fadeIn  0.45s ease both; }
+.slide-up { animation: slideUp 0.5s  ease both; }
+
+/* ─── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: var(--black-3); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }

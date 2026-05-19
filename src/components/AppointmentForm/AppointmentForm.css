@@ -1,0 +1,237 @@
+/* ============================================
+   AppointmentForm.css — Mikael Barber
+   ============================================ */
+
+/* ─── Card wrapper ────────────────────────────── */
+.appt-form-card {
+  background: var(--black);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+.appt-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+}
+
+/* ─── Grid de campos ──────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-row--single { grid-template-columns: 1fr; }
+
+/* ─── Label ───────────────────────────────────── */
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.field-label i { font-size: 13px; }
+.field-label--required::after {
+  content: ' *';
+  color: var(--red-light);
+}
+
+/* ─── Inputs, selects, textareas ──────────────── */
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  color: var(--white);
+  padding: 13px 15px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+}
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.03);
+}
+.field-input::placeholder,
+.field-textarea::placeholder { color: var(--gray-2); }
+.field-input.error { border-color: var(--red-light); }
+
+.field-select option {
+  background: var(--black-4);
+  color: var(--white);
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.6;
+}
+
+/* ─── Consumíveis ─────────────────────────────── */
+.consumables-section { margin-bottom: 20px; }
+
+.consumables-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-height: 32px;
+}
+
+.consumable-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201, 168, 76, 0.10);
+  border: 1px solid rgba(201, 168, 76, 0.32);
+  color: var(--gold);
+  padding: 5px 12px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  animation: fadeIn 0.25s ease both;
+}
+.consumable-tag i { font-size: 12px; }
+
+.consumable-tag__remove {
+  background: none;
+  border: none;
+  color: rgba(201, 168, 76, 0.5);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  transition: color 0.2s;
+}
+.consumable-tag__remove:hover { color: var(--red-light); }
+
+.consumable-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 2px solid rgba(201, 168, 76, 0.08);
+}
+.consumable-row:last-of-type {
+  border-bottom: none;
+}
+
+.consumables-subtotal{
+  align-items: center;
+  gap: 8px;
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.subtotal-valor{
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.consumables-add-row {
+  display: flex;
+  gap: 20px;
+}
+
+.consumables-add-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(201, 168, 76, 0.15);
+  color: var(--white);
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+}
+.consumables-add-input:focus { border-color: var(--gold); }
+.consumables-add-input::placeholder { color: var(--gray-2); }
+
+.consumables-add-btn {
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid var(--gold-border);
+  color: var(--gold);
+  padding: 11px 20px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: var(--transition);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: var(--radius-md);
+}
+.consumables-add-btn:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+.consumables-add-btn i { font-size: 14px; }
+
+/* ─── Rodapé do form ──────────────────────────── */
+.appt-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  margin-top: 8px;
+}
+
+.appt-save-btn {
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  padding: 14px 44px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius-md);
+}
+.appt-save-btn:hover:not(:disabled) {
+  background: var(--gold-light);
+  letter-spacing: 4px;
+}
+.appt-save-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.appt-save-btn i { font-size: 16px; }
+
+.appt-form-hint {
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 0.5px;
+}
+.appt-form-hint i { color: var(--red-light); font-size: 12px; vertical-align: middle; }
+
+.ti-sparkles{
+  margin: 0 6px 0 0;
+}
+
+@media (max-width: 640px) {
+  .form-row { grid-template-columns: 1fr; }
+  .appt-form-card { padding: 20px 16px; }
+}

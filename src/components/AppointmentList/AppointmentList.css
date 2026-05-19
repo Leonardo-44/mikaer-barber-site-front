@@ -1,0 +1,272 @@
+/* ============================================
+   AppointmentList.css — Mikael Barber
+   ============================================ */
+
+/* ─── Toolbar de busca/filtro ─────────────────── */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.list-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.list-search-wrap i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray);
+  font-size: 16px;
+  pointer-events: none;
+}
+.list-search {
+  width: 100%;
+  background: var(--black);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  color: var(--white);
+  padding: 11px 15px 11px 40px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+}
+.list-search:focus { border-color: var(--gold); }
+.list-search::placeholder { color: var(--gray-2); }
+
+.list-filter-select {
+  background: var(--black);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  color: var(--white-dim);
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  outline: none;
+  transition: var(--transition);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  min-width: 140px;
+}
+.list-filter-select:focus { border-color: var(--gold); }
+.list-filter-select option { background: var(--black-4); }
+
+.list-count {
+  font-size: 11px;
+  color: var(--gray);
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+.list-count strong { color: var(--gold); }
+
+/* ─── Tabela ──────────────────────────────────── */
+.appt-table-wrapper {
+  background: var(--black);
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  overflow: hidden;
+  position: relative;
+}
+.appt-table-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+}
+
+.appt-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.appt-table th {
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+  background: rgba(201, 168, 76, 0.03);
+  white-space: nowrap;
+}
+
+.appt-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  color: var(--white-2);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.appt-table tr:last-child td { border-bottom: none; }
+.appt-table tbody tr {
+  transition: background 0.2s;
+}
+.appt-table tbody tr:hover td {
+  background: rgba(201, 168, 76, 0.03);
+}
+
+/* Colunas */
+.col-client  { width: 20%; }
+.col-cut     { width: 16%; }
+.col-cons    { width: 24%; }
+.col-barber  { width: 10%; }
+.col-date    { width: 12%; }
+.col-price   { width: 9%; }
+.col-status  { width: 11%; }
+.col-actions { width: 5%; text-align: center; }
+
+/* Célula de cliente */
+.cell-client__name  { font-weight: 500; color: var(--white); }
+.cell-client__phone { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+/* Badge corte */
+.cut-badge {
+  display: inline-block;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Tags de consumíveis */
+.cons-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.cons-tag {
+  background: rgba(139, 26, 26, 0.22);
+  border: 1px solid rgba(178, 34, 34, 0.35);
+  color: #ffaaaa;
+  padding: 3px 8px;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+.cons-empty { color: var(--gray-2); font-size: 12px; }
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.status-done      { background: rgba(10,60,10,0.45); border: 1px solid #2a7a2a; color: #6af06a; }
+.status-pending   { background: rgba(100,70,0,0.4);  border: 1px solid var(--gold-dark); color: var(--gold); }
+.status-cancelled { background: rgba(80,10,10,0.4);  border: 1px solid var(--red-dark); color: #ff8888; }
+
+/* Preço */
+.cell-price { color: var(--gold-light); font-weight: 500; }
+
+/* Ações */
+.action-btn {
+  background: none;
+  border: none;
+  color: rgba(201, 168, 76, 0.3);
+  cursor: pointer;
+  padding: 6px;
+  font-size: 16px;
+  display: inline-flex;
+  transition: color 0.25s;
+  border-radius: 2px;
+}
+.action-btn:hover { color: var(--red-light); }
+.action-btn--edit:hover { color: var(--gold); }
+
+/* ─── Empty state ─────────────────────────────── */
+.list-empty {
+  text-align: center;
+  padding: 72px 24px;
+  color: var(--gray);
+}
+.list-empty__icon {
+  font-size: 52px;
+  color: rgba(201, 168, 76, 0.12);
+  display: block;
+  margin-bottom: 16px;
+}
+.list-empty__title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--gray-2);
+  margin-bottom: 6px;
+}
+.list-empty__sub { font-size: 12px; color: var(--gray-2); }
+
+/* ─── Footer da lista ─────────────────────────── */
+.list-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 2px;
+}
+.list-footer__total {
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: 1px;
+}
+.list-footer__revenue {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+.list-footer__revenue-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-right: 8px;
+}
+
+/* ── Status Select ─────────────────────────── */
+.status-select {
+  appearance: none;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.2s;
+}
+
+.status-select:hover {
+  opacity: 0.85;
+}
+
+.status-select--done {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.status-select--pending {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.status-select--cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Opções herdam a cor do select pai */
+.status-select option {
+  background: var(--bg, #1a1a1a);
+  color: var(--text, #fff);
+  font-weight: 500;
+}
