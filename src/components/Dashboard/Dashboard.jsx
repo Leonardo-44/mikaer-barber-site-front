@@ -302,7 +302,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { barber, logout } = auth || {};
 
-  const isAdmin = barber?.username === "mikael";
+  const isAdmin = barber?.username === import.meta.env.VITE_ADMIN_USERNAME;
 
   const [tab, setTab] = useState("novo");
   const [appointments, setAppointments] = useState([]);
@@ -335,23 +335,23 @@ export default function Dashboard() {
 
   // ── Busca agendamentos do backend ao montar ──
   useEffect(() => {
-    appointmentService
-      .getAll(isAdmin) // ✅ passa flag
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data.appointments || [];
-        setAppointments(list);
-      })
-      .catch(() => fireToast("Erro ao carregar agendamentos."))
-      .finally(() => setLoadingAppts(false));
-  }, []);
+  appointmentService
+    .getAll(isAdmin)
+    .then((data) => {
+      const list = Array.isArray(data) ? data : data.appointments || [];
+      setAppointments(list);
+    })
+    .catch(() => fireToast("Erro ao carregar agendamentos."))
+    .finally(() => setLoadingAppts(false));
+}, [isAdmin]);
 
   useEffect(() => {
-    if (!isAdmin) return;
-    authService
-      .getBarbers()
-      .then((data) => setBarbers(data.barbers || []))
-      .catch(() => fireToast("Erro ao carregar barbeiros."));
-  }, []);
+  if (!isAdmin) return;
+  authService
+    .getBarbers()
+    .then((data) => setBarbers(data.barbers || []))
+    .catch(() => fireToast("Erro ao carregar barbeiros."));
+}, [isAdmin]); // 👈 adiciona isAdmin como dependência
 
   // ── Fecha drawer ao pressionar Escape ──
   const handleKeyDown = useCallback(
