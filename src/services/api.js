@@ -1,9 +1,8 @@
 // ============================================
 //  MIKAEL BARBER — API Service
-//  Centraliza todas as chamadas ao backend Node.js
 // ============================================
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3333/api';
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('mb_token');
@@ -16,7 +15,7 @@ async function request(endpoint, options = {}) {
   const res = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
   const data = await res.json();
 
-  if (!res.ok) throw new Error(data.message || 'Erro na requisição');
+  if (!res.ok) throw new Error(data.error || data.message || 'Erro na requisição');
   return data;
 }
 
@@ -29,11 +28,20 @@ export const authService = {
     }),
 
   me: () => request('/auth/me'),
+
+  getBarbers: () => request('/auth/barbers'), // ✅ novo
+
+  createBarber: (payload) =>
+    request('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 // ─── Agendamentos ─────────────────────────────
 export const appointmentService = {
-  getAll: () => request('/appointments'),
+  getAll: (isAdmin = false) =>
+    request(`/appointments${isAdmin ? '?all=true' : ''}`),
 
   create: (payload) =>
     request('/appointments', {

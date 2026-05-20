@@ -1,43 +1,55 @@
 // ============================================
-//  Login.jsx — Mikael Barber (integrado com API)
+//  Login.jsx — Mikael Barber (UI/UX melhorado)
 // ============================================
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../Context/AuthContext';
-import { authService } from "../../services/api";   
+import { authService } from '../../services/api';
 import './Login.css';
 
 export default function Login() {
-  const { login }    = useAuth();
-  const navigate     = useNavigate();
+  const { login }   = useAuth();
+  const navigate    = useNavigate();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [touched, setTouched]   = useState({ username: false, password: false });
+  const [shake, setShake]       = useState(false);
+
+  const usernameRef = useRef(null);
+
+  useEffect(() => {
+    usernameRef.current?.focus();
+  }, []);
+
+  const handleBlur = (field) =>
+    setTouched((prev) => ({ ...prev, [field]: true }));
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
 
   const handleSubmit = async () => {
+    setTouched({ username: true, password: true });
     setError('');
+
     if (!username.trim() || !password.trim()) {
-      setError('Preencha todos os campos.');
+      triggerShake();
       return;
     }
+
     setLoading(true);
-
     try {
-      // FIX 4: chama o backend real em vez do array mock
       const data = await authService.login(username.trim(), password);
-
-      // Salva o token para as próximas requisições
-      localStorage.setItem('mb_token', data.token);
-
-      // Alimenta o contexto global com os dados do barbeiro
-      login(data.barber);
-
+      login(data.barber, data.token); // ← passa barber E token para o contexto
       navigate('/dashboard', { replace: true });
     } catch (err) {
+      triggerShake();
       setError(err.message || 'Usuário ou senha incorretos.');
     } finally {
       setLoading(false);
@@ -48,54 +60,84 @@ export default function Login() {
     if (e.key === 'Enter') handleSubmit();
   };
 
+  const hasError = (field) => touched[field] && !{ username, password }[field].trim();
+
   return (
     <div className="login-screen">
-      <div className="login-screen__bg"         aria-hidden="true" />
+      <div className="login-screen__bg" aria-hidden="true" />
       <div className="login-screen__bg-pattern" aria-hidden="true" />
-      <div className="login-screen__stripe"     aria-hidden="true" />
 
-      <div className="login-card slide-up">
+      <div className={`login-card slide-up${shake ? ' shake' : ''}`}>
+
+        {/* ── Header ── */}
         <div className="login-card__header">
-          <i className="ti ti-cut login-card__icon" aria-hidden="true" />
-          <div className="login-card__brand">MIKAEL BARBER</div>
-          <span className="login-card__brand-sub">Área Restrita</span>
+          <div className="login-card__logo-ring" aria-hidden="true">
+            <i className="ti ti-cut" />
+          </div>
+          <h1 className="login-card__brand">MIKAEL BARBER</h1>
+          <p className="login-card__brand-sub">Área do Barbeiro</p>
         </div>
 
-        <div className="login-card__divider" aria-hidden="true" />
-        <p className="login-card__subtitle">Acesso exclusivo para barbeiros</p>
-
+        {/* ── Erro global ── */}
         {error && (
-          <div className="login-error" role="alert">
+          <div className="login-error" role="alert" aria-live="assertive">
             <i className="ti ti-alert-triangle" aria-hidden="true" />
-            {error}
+            <span>{error}</span>
           </div>
         )}
 
-        <div className="login-form">
-          <div className="form-field">
+        {/* ── Formulário ── */}
+        <div className="login-form" role="form" aria-label="Formulário de acesso">
+
+          {/* Usuário */}
+          <div className={`form-field${hasError('username') ? ' form-field--error' : ''}`}>
             <label className="form-field__label" htmlFor="login-user">
-              <i className="ti ti-user" aria-hidden="true" />
               Usuário
             </label>
-            <input
-              id="login-user"
-              className="form-field__input"
-              type="text"
-              placeholder="seu.usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={handleKey}
-              autoComplete="username"
-              autoFocus
-            />
+            <div className="form-field__wrapper">
+              <i className="ti ti-user form-field__icon" aria-hidden="true" />
+              <input
+                ref={usernameRef}
+                id="login-user"
+                className="form-field__input"
+                type="text"
+                placeholder="seu.usuario"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => handleBlur('username')}
+                onKeyDown={handleKey}
+                autoComplete="username"
+                aria-required="true"
+                aria-invalid={hasError('username')}
+                aria-describedby={hasError('username') ? 'username-err' : undefined}
+              />
+              {username && (
+                <button
+                  type="button"
+                  className="form-field__clear"
+                  onClick={() => { setUsername(''); usernameRef.current?.focus(); }}
+                  aria-label="Limpar usuário"
+                >
+                  <i className="ti ti-x" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+            {hasError('username') && (
+              <span id="username-err" className="form-field__hint form-field__hint--error">
+                Informe seu usuário
+              </span>
+            )}
           </div>
 
-          <div className="form-field">
-            <label className="form-field__label" htmlFor="login-pass">
-              <i className="ti ti-lock" aria-hidden="true" />
-              Senha
-            </label>
-            <div style={{ position: 'relative' }}>
+          {/* Senha */}
+          <div className={`form-field${hasError('password') ? ' form-field--error' : ''}`}>
+            <div className="form-field__label-row">
+              <label className="form-field__label" htmlFor="login-pass">
+                Senha
+              </label>
+            </div>
+            <div className="form-field__wrapper">
+              <i className="ti ti-lock form-field__icon" aria-hidden="true" />
               <input
                 id="login-pass"
                 className="form-field__input"
@@ -103,44 +145,57 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => handleBlur('password')}
                 onKeyDown={handleKey}
                 autoComplete="current-password"
-                style={{ paddingRight: 44 }}
+                aria-required="true"
+                aria-invalid={hasError('password')}
+                aria-describedby={hasError('password') ? 'password-err' : undefined}
               />
               <button
                 type="button"
+                className="modal-field__toggle"
                 onClick={() => setShowPass((p) => !p)}
-                style={{
-                  position: 'absolute', right: 12, top: '50%',
-                  transform: 'translateY(-50%)', background: 'none',
-                  border: 'none', color: 'var(--gray)', cursor: 'pointer',
-                  fontSize: 16, padding: 4, display: 'flex',
-                }}
                 aria-label={showPass ? 'Ocultar senha' : 'Mostrar senha'}
               >
-                <i className={`ti ti-eye${showPass ? '-off' : ''}`} />
+                <i className={`ti ti-eye${showPass ? '-off' : ''}`} aria-hidden="true" />
               </button>
             </div>
+            {hasError('password') && (
+              <span id="password-err" className="form-field__hint form-field__hint--error">
+                Informe sua senha
+              </span>
+            )}
           </div>
 
-          <button className="login-btn" onClick={handleSubmit} disabled={loading}>
+          {/* Botão */}
+          <button
+            className="login-btn"
+            onClick={handleSubmit}
+            disabled={loading}
+            aria-busy={loading}
+          >
             {loading ? (
               <>
-                <i className="ti ti-loader-2" style={{ animation: 'spin 1s linear infinite' }} />
-                Entrando...
+                <i className="ti ti-loader-2 spin" aria-hidden="true" />
+                <span>Entrando…</span>
               </>
             ) : (
               <>
-                <i className="ti ti-login" />
-                Entrar
+                <i className="ti ti-login" aria-hidden="true" />
+                <span>Entrar</span>
               </>
             )}
           </button>
         </div>
 
-        <button className="login-back" onClick={() => navigate('/')}>
-          ← Voltar ao site
-        </button>
+        {/* ── Rodapé ── */}
+        <div className="login-footer">
+          <button className="login-back" onClick={() => navigate('/')}>
+            <i className="ti ti-arrow-left" aria-hidden="true" />
+            Voltar ao site
+          </button>
+        </div>
       </div>
     </div>
   );

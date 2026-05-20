@@ -1,112 +1,456 @@
 // ============================================
-//  Dashboard.jsx — Mikael Barber
+//  Dashboard.jsx — Mikael Barber (Responsivo melhorado)
 // ============================================
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from "react-router-dom";
-import { useAuth } from '../../Context/AuthContext';
-import AppointmentForm from '../AppointmentForm/AppointmentForm';
-import AppointmentList from '../AppointmentList/AppointmentList';
-import './Dashboard.css';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext";
+import { appointmentService, authService } from "../../services/api";
+import AppointmentForm from "../AppointmentForm/AppointmentForm";
+import AppointmentList from "../AppointmentList/AppointmentList";
+import "./Dashboard.css";
 
-const INITIAL_APPOINTMENTS = [
-  {
-    id: 1,
-    clientName:  'Carlos Mendes',
-    clientPhone: '(11) 91234-5678',
-    cut:         'Social Degradê',
-    price:       '55',
-    consumables: ['Pomada Modeladora'],
-    obs:         '',
-    status:      'cancelled',
-    barber:      'Mikael',
-    date:        new Date().toLocaleDateString('pt-BR'),
-    time:        '09:30',
-  },
-  {
-    id: 2,
-    clientName:  'Bruno Alves',
-    clientPhone: '',
-    cut:         'Corte + Barba',
-    price:       '80',
-    consumables: ['Óleo de Barba', 'Loção Pós-Barba'],
-    obs:         'Prefere acabamento reto na nuca',
-    status:      'done',
-    barber:      'Lucas',
-    date:        new Date().toLocaleDateString('pt-BR'),
-    time:        '10:15',
-  },
-  {
-    id: 3,
-    clientName:  'Felipe Costa',
-    clientPhone: '(11) 99876-5432',
-    cut:         'Skin Fade',
-    price:       '60',
-    consumables: [],
-    obs:         '',
-    status:      'pending',
-    barber:      'Mikael',
-    date:        new Date().toLocaleDateString('pt-BR'),
-    time:        '14:00',
-  },
-];
+const INITIAL_BARBERS = [];
 
 const NAV_ITEMS = [
-  { id: 'novo',  label: 'Novo Atendimento', icon: 'ti-plus'          },
-  { id: 'lista', label: 'Agendamentos',     icon: 'ti-calendar-list' },
+  { id: "novo", label: "Novo Atendimento", icon: "ti-plus" },
+  { id: "lista", label: "Agendamentos", icon: "ti-calendar-list" },
 ];
 
+// ── Avatar com inicial do nome ────────────────────
+function BarberAvatar({ name, size = 32 }) {
+  return (
+    <div
+      className="barber-avatar"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.42) }}
+      aria-hidden="true"
+    >
+      {(name || "?").charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+// ── Modal de confirmação de remoção ───────────────
+function ConfirmModal({ barber, onConfirm, onCancel }) {
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+    >
+      <div className="modal-card modal-card--sm slide-up">
+        <div className="modal-header">
+          <div
+            className="modal-header__icon modal-header__icon--danger"
+            aria-hidden="true"
+          >
+            <i className="ti ti-alert-triangle" />
+          </div>
+          <div>
+            <h2 className="modal-header__title" id="confirm-title">
+              Remover barbeiro
+            </h2>
+            <p className="modal-header__sub">Essa ação não pode ser desfeita</p>
+          </div>
+          <button
+            className="modal-close"
+            onClick={onCancel}
+            aria-label="Fechar"
+          >
+            <i className="ti ti-x" aria-hidden="true" />
+          </button>
+        </div>
+        <div className="modal-divider" />
+        <p className="modal-confirm__text">
+          Tem certeza que deseja remover <strong>{barber.name}</strong>{" "}
+          <span className="modal-confirm__user">@{barber.username}</span>?
+        </p>
+        <div className="modal-footer">
+          <button className="modal-btn modal-btn--cancel" onClick={onCancel}>
+            Cancelar
+          </button>
+          <button className="modal-btn modal-btn--danger" onClick={onConfirm}>
+            <i className="ti ti-trash" aria-hidden="true" /> Remover
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal de criar barbeiro ───────────────────────
+function BarberModal({ onClose, onSave }) {
+  const [form, setForm] = useState({ name: "", username: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = "Informe o nome";
+    if (!form.username.trim()) e.username = "Informe o usuário";
+    if (form.password.length < 4) e.password = "Mínimo 4 caracteres";
+    return e;
+  };
+
+  const handleChange = (field) => (e) => {
+    setForm((p) => ({ ...p, [field]: e.target.value }));
+    setErrors((p) => ({ ...p, [field]: undefined }));
+  };
+
+  const handleSave = async () => {
+    const e = validate();
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // ✅ Chama o backend de verdade
+      const data = await authService.createBarber({
+        name: form.name.trim(),
+        username: form.username.trim(),
+        password: form.password,
+      });
+
+      onSave(
+        data.barber || {
+          name: form.name.trim(),
+          username: form.username.trim(),
+        },
+      );
+    } catch (err) {
+      // Mostra erro dentro do modal (ex: usuário já existe)
+      setErrors({ username: err.message || "Erro ao criar barbeiro" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKey = (e) => {
+    if (e.key === "Enter") handleSave();
+  };
+
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div className="modal-card slide-up">
+        <div className="modal-header">
+          <div className="modal-header__icon" aria-hidden="true">
+            <i className="ti ti-user-plus" />
+          </div>
+          <div>
+            <h2 className="modal-header__title" id="modal-title">
+              Novo Barbeiro
+            </h2>
+            <p className="modal-header__sub">Acesso restrito ao painel</p>
+          </div>
+          <button
+            className="modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
+          >
+            <i className="ti ti-x" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="modal-divider" />
+
+        <div className="modal-avatar-preview">
+          <BarberAvatar name={form.name || "?"} size={52} />
+          <div className="modal-avatar-preview__info">
+            <span className="modal-avatar-preview__name">
+              {form.name.trim() || "Nome do barbeiro"}
+            </span>
+            {form.username.trim() && (
+              <span className="modal-avatar-preview__user">
+                @{form.username.trim()}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="modal-body">
+          <div
+            className={`modal-field${errors.name ? " modal-field--error" : ""}`}
+          >
+            <label className="modal-field__label" htmlFor="barber-name">
+              Nome
+            </label>
+            <div className="modal-field__wrapper">
+              <i className="ti ti-user modal-field__icon" aria-hidden="true" />
+              <input
+                id="barber-name"
+                className="modal-field__input"
+                type="text"
+                placeholder="Ex: João"
+                value={form.name}
+                onChange={handleChange("name")}
+                onKeyDown={handleKey}
+                autoFocus
+                aria-required="true"
+                aria-invalid={!!errors.name}
+              />
+            </div>
+            {errors.name && (
+              <span className="modal-field__hint">{errors.name}</span>
+            )}
+          </div>
+
+          <div
+            className={`modal-field${errors.username ? " modal-field--error" : ""}`}
+          >
+            <label className="modal-field__label" htmlFor="barber-username">
+              Usuário (login)
+            </label>
+            <div className="modal-field__wrapper">
+              <i className="ti ti-at modal-field__icon" aria-hidden="true" />
+              <input
+                id="barber-username"
+                className="modal-field__input"
+                type="text"
+                placeholder="Ex: joao"
+                value={form.username}
+                onChange={handleChange("username")}
+                onKeyDown={handleKey}
+                autoComplete="off"
+                aria-required="true"
+                aria-invalid={!!errors.username}
+              />
+            </div>
+            {errors.username && (
+              <span className="modal-field__hint">{errors.username}</span>
+            )}
+          </div>
+
+          <div
+            className={`modal-field${errors.password ? " modal-field--error" : ""}`}
+          >
+            <label className="modal-field__label" htmlFor="barber-password">
+              Senha
+            </label>
+            <div className="modal-field__wrapper">
+              <i className="ti ti-lock modal-field__icon" aria-hidden="true" />
+              <input
+                id="barber-password"
+                className="modal-field__input"
+                type={showPass ? "text" : "password"}
+                placeholder="Mínimo 4 caracteres"
+                value={form.password}
+                onChange={handleChange("password")}
+                onKeyDown={handleKey}
+                autoComplete="new-password"
+                aria-required="true"
+                aria-invalid={!!errors.password}
+              />
+              <button
+                type="button"
+                className="modal-field__toggle"
+                onClick={() => setShowPass((p) => !p)}
+                aria-label={showPass ? "Ocultar senha" : "Mostrar senha"}
+              >
+                <i
+                  className={`ti ti-eye${showPass ? "-off" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
+            {errors.password && (
+              <span className="modal-field__hint">{errors.password}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="modal-btn modal-btn--cancel" onClick={onClose}>
+            Cancelar
+          </button>
+          <button
+            className="modal-btn modal-btn--save"
+            onClick={handleSave}
+            disabled={loading}
+            aria-busy={loading}
+          >
+            {loading ? (
+              <>
+                <i className="ti ti-loader-2 spin" aria-hidden="true" />{" "}
+                Salvando…
+              </>
+            ) : (
+              <>
+                <i className="ti ti-check" aria-hidden="true" /> Criar barbeiro
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Dashboard principal ───────────────────────────
 export default function Dashboard() {
-  const auth     = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
   const { barber, logout } = auth || {};
 
-  const [tab, setTab]                   = useState('novo');
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
-  const [showToast, setShowToast]       = useState(false);
+  const isAdmin = barber?.username === "mikael";
 
-  const today = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'long', day: '2-digit', month: 'long',
+  const [tab, setTab] = useState("novo");
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppts, setLoadingAppts] = useState(true);
+  const [barbers, setBarbers] = useState(INITIAL_BARBERS);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [showBarberModal, setShowBarberModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const today = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
   });
 
-  const todayCount = appointments.filter(
-    (a) => a.date === new Date().toLocaleDateString('pt-BR'),
-  ).length;
+  const todayStr = new Date().toLocaleDateString("pt-BR");
+
+  const todayCount = appointments.filter((a) => {
+    const dateStr = a.scheduled_at
+      ? new Date(a.scheduled_at).toLocaleDateString("pt-BR")
+      : a.date || "";
+    return dateStr === todayStr;
+  }).length;
 
   const totalRevenue = appointments
-    .filter((a) => a.status === 'done' && a.price)
-    .reduce((sum, a) => sum + parseFloat(a.price || 0), 0);
+    .filter((a) => a.status === "done")
+    .reduce((sum, a) => sum + parseFloat(a.total_price || a.price || 0), 0);
 
-  const handleSaved = (record) => {
-    setAppointments((prev) => [record, ...prev]);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3500);
-    setTab('lista');
+  // ── Busca agendamentos do backend ao montar ──
+  useEffect(() => {
+    appointmentService
+      .getAll(isAdmin) // ✅ passa flag
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.appointments || [];
+        setAppointments(list);
+      })
+      .catch(() => fireToast("Erro ao carregar agendamentos."))
+      .finally(() => setLoadingAppts(false));
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    authService
+      .getBarbers()
+      .then((data) => setBarbers(data.barbers || []))
+      .catch(() => fireToast("Erro ao carregar barbeiros."));
+  }, []);
+
+  // ── Fecha drawer ao pressionar Escape ──
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Escape" && sidebarOpen) setSidebarOpen(false);
+    },
+    [sidebarOpen],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // ── Bloqueia scroll enquanto drawer está aberto ──
+  useEffect(() => {
+    document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
+
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const handleNavClick = (id) => {
+    setTab(id);
+    closeSidebar();
   };
 
-  const handleDelete = (id) =>
-    setAppointments((prev) => prev.filter((a) => a.id !== id));
+  const fireToast = (msg) => {
+    setToastMsg(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3500);
+  };
 
-  // ✅ Atualiza o status de um agendamento pelo id
-  const handleStatusChange = (id, newStatus) =>
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
-    );
+  // ── Salva no backend e atualiza estado local ──
+  const handleSaved = (appointment) => {
+    setAppointments((prev) => [appointment, ...prev]);
+    fireToast("Atendimento registrado com sucesso!");
+    setTab("lista");
+  };
+
+  // ── Remove no backend e atualiza estado local ──
+  const handleDelete = async (id) => {
+    try {
+      await appointmentService.remove(id);
+      setAppointments((prev) => prev.filter((a) => a.id !== id));
+    } catch {
+      fireToast("Erro ao remover atendimento.");
+    }
+  };
+
+  // ── Atualiza status no backend e no estado local ──
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await appointmentService.update(id, { status: newStatus });
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
+      );
+    } catch {
+      fireToast("Erro ao atualizar status.");
+    }
+  };
+
+  const handleBarberSaved = (newBarber) => {
+    setBarbers((prev) => [...prev, newBarber]);
+    setShowBarberModal(false);
+    fireToast(`Barbeiro "${newBarber.name}" criado com sucesso!`);
+  };
+
+  const confirmBarberDelete = () => {
+    setBarbers((prev) => prev.filter((b) => b.id !== confirmDelete.id));
+    fireToast(`Barbeiro "${confirmDelete.name}" removido.`);
+    setConfirmDelete(null);
+  };
 
   const handleLogout = () => {
     logout();
-    navigate('/', { replace: true });
+    navigate("/", { replace: true });
   };
 
   if (!auth) {
-    return <div className="dashboard-loading">Carregando aplicação...</div>;
+    return (
+      <div className="dashboard-loading">
+        <i className="ti ti-loader-2 spin" aria-hidden="true" />
+        Carregando…
+      </div>
+    );
   }
 
   return (
     <div className="dashboard">
+      {/* ── Header ── */}
       <header className="dash-header">
-        <Link to="/" className="dash-header__brand">
+        <Link
+          to="/"
+          className="dash-header__brand"
+          aria-label="Voltar à página inicial"
+        >
           <i className="ti ti-cut" aria-hidden="true" />
           MIKAEL BARBER
         </Link>
@@ -115,34 +459,58 @@ export default function Dashboard() {
           <span className="dash-header__date">{today}</span>
 
           <div className="dash-header__user">
-            <i className="ti ti-user-circle" aria-hidden="true" />
-            <span className="dash-header__user-name">{barber?.name || 'Barbeiro'}</span>
+            <BarberAvatar name={barber?.name} size={30} />
+            <span className="dash-header__user-name">
+              {barber?.name || "Barbeiro"}
+            </span>
+            {isAdmin && <span className="dash-header__badge">Admin</span>}
           </div>
 
           <button className="dash-logout-btn" onClick={handleLogout}>
             <i className="ti ti-logout" aria-hidden="true" />
-            Sair
+            <span>Sair</span>
+          </button>
+
+          <button
+            className="dash-header__menu-btn"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={sidebarOpen}
+            aria-controls="dash-sidebar"
+          >
+            <i
+              className={`ti ${sidebarOpen ? "ti-x" : "ti-menu-2"}`}
+              aria-hidden="true"
+            />
           </button>
         </div>
       </header>
 
       <div className="dash-body">
-        <aside className="dash-sidebar">
-          <div className="sidebar__section-title">Menu</div>
+        {/* Overlay escurecido — clica para fechar no mobile */}
+        <div
+          className={`sidebar-overlay${sidebarOpen ? " is-open" : ""}`}
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
 
+        {/* ── Sidebar / Drawer ── */}
+        <aside
+          id="dash-sidebar"
+          className={`dash-sidebar${sidebarOpen ? " is-open" : ""}`}
+          aria-label="Menu lateral"
+        >
+          <div className="sidebar__section-title">Menu</div>
           {NAV_ITEMS.map((item) => (
-            <div
+            <button
               key={item.id}
-              className={`sidebar__item${tab === item.id ? ' active' : ''}`}
-              onClick={() => setTab(item.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && setTab(item.id)}
-              aria-current={tab === item.id ? 'page' : undefined}
+              className={`sidebar__item${tab === item.id ? " active" : ""}`}
+              onClick={() => handleNavClick(item.id)}
+              aria-current={tab === item.id ? "page" : undefined}
             >
               <i className={`ti ${item.icon}`} aria-hidden="true" />
               <span>{item.label}</span>
-            </div>
+            </button>
           ))}
 
           <div className="sidebar__divider" />
@@ -153,39 +521,82 @@ export default function Dashboard() {
             <div className="sidebar__summary-value">{todayCount}</div>
             <div className="sidebar__summary-sub">realizados hoje</div>
           </div>
-
           <div className="sidebar__summary">
             <div className="sidebar__summary-label">Faturamento</div>
-            <div className="sidebar__summary-value" style={{ fontSize: 18 }}>
+            <div className="sidebar__summary-value sidebar__summary-value--md">
               R$ {totalRevenue.toFixed(0)}
             </div>
             <div className="sidebar__summary-sub">total geral</div>
           </div>
+
+          {/* ── Equipe — apenas admin ── */}
+          {isAdmin && (
+            <>
+              <div className="sidebar__divider" />
+              <div className="sidebar__section-title">Equipe</div>
+
+              <div className="sidebar__barbers">
+                {barbers.map((b) => (
+                  <div key={b.id} className="sidebar__barber">
+                    <BarberAvatar name={b.name} size={28} />
+                    <div className="sidebar__barber__info">
+                      <span className="sidebar__barber__name">{b.name}</span>
+                      <span className="sidebar__barber__user">
+                        @{b.username}
+                      </span>
+                    </div>
+                    {b.username !== barber?.username && (
+                      <button
+                        className="sidebar__barber__remove"
+                        onClick={() => setConfirmDelete(b)}
+                        aria-label={`Remover ${b.name}`}
+                        title="Remover barbeiro"
+                      >
+                        <i className="ti ti-trash" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="sidebar__add-barber"
+                onClick={() => setShowBarberModal(true)}
+              >
+                <i className="ti ti-user-plus" aria-hidden="true" />
+                <span>Adicionar barbeiro</span>
+              </button>
+            </>
+          )}
         </aside>
 
+        {/* ── Main ── */}
         <main className="dash-main">
           {showToast && (
-            <div className="toast-success" role="status">
+            <div className="toast-success" role="status" aria-live="assertive">
               <i className="ti ti-circle-check" aria-hidden="true" />
-              Atendimento registrado com sucesso!
+              {toastMsg}
             </div>
           )}
 
-          {tab === 'novo' && (
+          {tab === "novo" && (
             <>
               <div className="section-header">
                 <h2 className="section-header__title">Novo Atendimento</h2>
                 <div className="section-header__line" aria-hidden="true" />
                 <span className="section-header__meta">
-                  <i className="ti ti-user" style={{ marginRight: 6 }} />
-                  {barber?.name || 'Barbeiro'}
+                  <BarberAvatar name={barber?.name} size={18} />
+                  {barber?.name || "Barbeiro"}
                 </span>
               </div>
-              <AppointmentForm barberName={barber?.name} onSaved={handleSaved} />
+              <AppointmentForm
+                barberName={barber?.name}
+                onSaved={handleSaved}
+              />
             </>
           )}
 
-          {tab === 'lista' && (
+          {tab === "lista" && (
             <>
               <div className="section-header">
                 <h2 className="section-header__title">Agendamentos</h2>
@@ -194,9 +605,9 @@ export default function Dashboard() {
                   {appointments.length} total
                 </span>
               </div>
-              {/* ✅ onStatusChange passado para o componente */}
               <AppointmentList
                 appointments={appointments}
+                loading={loadingAppts}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}
               />
@@ -204,6 +615,22 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      {/* ── Modais ── */}
+      {showBarberModal && (
+        <BarberModal
+          onClose={() => setShowBarberModal(false)}
+          onSave={handleBarberSaved}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          barber={confirmDelete}
+          onConfirm={confirmBarberDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
