@@ -6,15 +6,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import { appointmentService, authService } from "../../services/api";
+
 import AppointmentForm from "../AppointmentForm/AppointmentForm";
 import AppointmentList from "../AppointmentList/AppointmentList";
+import ProductList from "../ProductList/ProductList";
 import "./Dashboard.css";
 
 const INITIAL_BARBERS = [];
 
 const NAV_ITEMS = [
+  { id: "produtos", label: "Produtos", icon: "ti-package" },
   { id: "novo", label: "Novo Atendimento", icon: "ti-plus" },
-  { id: "lista", label: "Agendamentos", icon: "ti-calendar-list" },
+  { id: "lista", label: "Agendamentos", icon: "ti-calendar" }
 ];
 
 // ── Avatar com inicial do nome ────────────────────
@@ -335,23 +338,23 @@ export default function Dashboard() {
 
   // ── Busca agendamentos do backend ao montar ──
   useEffect(() => {
-  appointmentService
-    .getAll(isAdmin)
-    .then((data) => {
-      const list = Array.isArray(data) ? data : data.appointments || [];
-      setAppointments(list);
-    })
-    .catch(() => fireToast("Erro ao carregar agendamentos."))
-    .finally(() => setLoadingAppts(false));
-}, [isAdmin]);
+    appointmentService
+      .getAll(isAdmin)
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.appointments || [];
+        setAppointments(list);
+      })
+      .catch(() => fireToast("Erro ao carregar agendamentos."))
+      .finally(() => setLoadingAppts(false));
+  }, [isAdmin]);
 
   useEffect(() => {
-  if (!isAdmin) return;
-  authService
-    .getBarbers()
-    .then((data) => setBarbers(data.barbers || []))
-    .catch(() => fireToast("Erro ao carregar barbeiros."));
-}, [isAdmin]); // 👈 adiciona isAdmin como dependência
+    if (!isAdmin) return;
+    authService
+      .getBarbers()
+      .then((data) => setBarbers(data.barbers || []))
+      .catch(() => fireToast("Erro ao carregar barbeiros."));
+  }, [isAdmin]); // 👈 adiciona isAdmin como dependência
 
   // ── Fecha drawer ao pressionar Escape ──
   const handleKeyDown = useCallback(
@@ -441,6 +444,38 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  const handleEdit = (updated) => {
+    setAppointments((prev) =>
+      prev.map((a) => {
+        if (a.id !== updated.id) return a;
+        const scheduled = updated.scheduled_at
+          ? new Date(updated.scheduled_at)
+          : null;
+        return {
+          ...a,
+          ...updated,
+          barber_name: updated.barber_name || a.barber_name,
+          client_name: updated.client_name || a.client_name,
+          client_phone: updated.client_phone || a.client_phone,
+          total_price: updated.total_price || a.total_price,
+          consumables: Array.isArray(updated.consumables)
+            ? updated.consumables
+            : updated.consumables
+              ? JSON.parse(updated.consumables)
+              : a.consumables,
+          date: scheduled ? scheduled.toLocaleDateString("pt-BR") : a.date,
+          time: scheduled
+            ? scheduled.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : a.time,
+        };
+      }),
+    );
+    fireToast("Atendimento atualizado com sucesso!");
+  };
 
   return (
     <div className="dashboard">
@@ -610,7 +645,17 @@ export default function Dashboard() {
                 loading={loadingAppts}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}
+                onEdit={handleEdit} // 👈
               />
+            </>
+          )}
+
+          {tab === "produtos" && (
+            <>
+              <div className="section-header">
+                <h2 className="section-header__title">Produtos</h2>
+              </div>
+              <ProductList fireToast={fireToast} />
             </>
           )}
         </main>

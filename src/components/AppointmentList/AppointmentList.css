@@ -306,6 +306,8 @@
   margin-top: 2px;
 }
 .appt-card__tag {
+  display: flex;
+  align-items: center;
   font-size: 10px;
   padding: 2px 8px;
   background: rgba(201, 168, 76, 0.07);

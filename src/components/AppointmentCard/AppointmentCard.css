@@ -1,0 +1,41 @@
+.appt-card__edit {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+  min-width: 28px;
+  min-height: 28px;
+  -webkit-tap-highlight-color: transparent;
+}
+.appt-card__edit:hover {
+  color: var(--gold);
+  background: rgba(201, 168, 76, 0.1);
+}
+
+.appt-card__consumables-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.appt-card__consumables-count .ti {
+  font-size: 0.95rem;
+  color: var(--accent, #f59e0b);
+}
+
+.appt-card__tag-qty {
+  margin-left: 4px;
+  font-weight: 800;
+  opacity: 0.90;
+  font-size: 0.78rem;
+}

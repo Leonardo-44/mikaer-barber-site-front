@@ -443,6 +443,7 @@
 
 /* ─── Modal card ──────────────────────────────── */
 .modal-card {
+  margin-top: 350px;
   background: #0e0e0e;
   border: 1px solid rgba(201, 168, 76, 0.18);
   width: 100%;
@@ -914,6 +915,20 @@
   /* Section header mais compacto */
   .section-header { margin-bottom: 16px; }
   .section-header__meta { display: none; }
+
+    .modal-card {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .modal-field__input {
+    font-size: 16px; /* evita zoom no iOS */
+  }
 }
 
 /* ─── Mobile pequeno (< 380px) ────────────────── */

@@ -2,14 +2,23 @@
 //  AppointmentForm.jsx — Mikael Barber
 // ============================================
 
-import { useState } from 'react';
-import { appointmentService } from '../../services/api';
+import { useState, useEffect } from 'react';
+import { appointmentService, productService } from '../../services/api';
 import './AppointmentForm.css';
 
+// Cortes com valor fixo
 const CUTS = [
-  'Degradê', 'Corte Social', 'Barba', 'Sobrancelha',
-  'Alisamento', 'Luzes', 'Nevou', 'Reflexo',
-  'Selagem', 'Botox', 'Barboterapia', 
+  { label: 'Degradê',      price: 20 },
+  { label: 'Corte Social', price: 17 },
+  { label: 'Barba',        price: 15 },
+  { label: 'Sobrancelha',  price: 5  },
+  { label: 'Alisamento',   price: 25 },
+  { label: 'Luzes',        price: 70 },
+  { label: 'Nevou',        price: 90 },
+  { label: 'Reflexo',      price: 80 },
+  { label: 'Selagem',      price: 70 },
+  { label: 'Botox',        price: 30 },
+  { label: 'Barboterapia', price: 25 },
 ];
 
 const EMPTY_FORM = { clientName: '', clientPhone: '', cut: '', price: '', status: 'done', obs: '' };
@@ -25,11 +34,21 @@ function formatPhone(value) {
 
 export default function AppointmentForm({ barberName, onSaved }) {
   const [form, setForm]               = useState(EMPTY_FORM);
+  // consumable shape: { name, price, qty, productId (null = manual) }
   const [consumables, setConsumables] = useState([]);
   const [consInput, setConsInput]     = useState(EMPTY_CONS);
   const [errors, setErrors]           = useState({});
   const [saving, setSaving]           = useState(false);
   const [apiError, setApiError]       = useState('');
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [showCatalog, setShowCatalog] = useState(false);
+
+  // Carrega produtos cadastrados
+  useEffect(() => {
+    productService.getAll()
+      .then((data) => setCatalogProducts(data.products || []))
+      .catch(() => {}); // silencioso — catálogo é opcional
+  }, []);
 
   const set = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -37,14 +56,62 @@ export default function AppointmentForm({ barberName, onSaved }) {
     if (apiError) setApiError('');
   };
 
-  const consTotal  = consumables.reduce((sum, c) => sum + parseFloat(c.price || 0), 0);
+  // Ao selecionar o corte, preenche o preço automaticamente
+  const handleCutChange = (e) => {
+    const label = e.target.value;
+    const found = CUTS.find((c) => c.label === label);
+    set('cut', label);
+    if (found) set('price', String(found.price));
+  };
+
+  // Soma: preço × quantidade de cada consumível
+  const consTotal  = consumables.reduce((sum, c) => sum + parseFloat(c.price || 0) * (c.qty || 1), 0);
   const grandTotal = parseFloat(form.price || 0) + consTotal;
 
-  const addConsumable = () => {
-    const name = consInput.name.trim();
-    if (!name) return;
-    setConsumables((prev) => [...prev, { name, price: consInput.price || '0' }]);
+  // Adiciona consumível manual
+  const addConsumable = (name = consInput.name, price = consInput.price) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setConsumables((prev) => [...prev, { name: trimmed, price: price || '0', qty: 1, productId: null }]);
     setConsInput(EMPTY_CONS);
+  };
+
+  // Adiciona produto do catálogo — incrementa qty se já estiver na lista
+  const addFromCatalog = (product) => {
+    setConsumables((prev) => {
+      const existingIdx = prev.findIndex((c) => c.productId === product.id);
+      if (existingIdx >= 0) {
+        // Verifica se há estoque suficiente
+        const currentQty = prev[existingIdx].qty;
+        const catalogItem = catalogProducts.find((p) => p.id === product.id);
+        const availableStock = catalogItem?.stock ?? Infinity;
+        if (currentQty >= availableStock) return prev; // não incrementa além do estoque
+        return prev.map((c, i) =>
+          i === existingIdx ? { ...c, qty: c.qty + 1 } : c
+        );
+      }
+      return [
+        ...prev,
+        { name: product.name, price: String(product.price), qty: 1, productId: product.id },
+      ];
+    });
+  };
+
+  // Altera a quantidade de um consumível (+1 / -1)
+  const changeQty = (index, delta) => {
+    setConsumables((prev) =>
+      prev.map((c, i) => {
+        if (i !== index) return c;
+        const newQty = Math.max(1, (c.qty || 1) + delta);
+        // Para itens do catálogo, não ultrapassar o estoque disponível
+        if (c.productId) {
+          const catalogItem = catalogProducts.find((p) => p.id === c.productId);
+          const maxStock = catalogItem?.stock ?? Infinity;
+          return { ...c, qty: Math.min(newQty, maxStock) };
+        }
+        return { ...c, qty: newQty };
+      })
+    );
   };
 
   const removeConsumable = (index) =>
@@ -71,17 +138,46 @@ export default function AppointmentForm({ barberName, onSaved }) {
         cut:          form.cut,
         servicePrice: parseFloat(form.price || 0),
         price:        grandTotal.toFixed(2),
-        consumables,
-        obs:          form.obs.trim(),
-        status:       form.status,
+        consumables:  consumables.map((c) => ({
+          name:      c.name,
+          price:     c.price,
+          qty:       c.qty || 1,
+          productId: c.productId || null,
+        })),
+        obs:    form.obs.trim(),
+        status: form.status,
       };
 
       const data = await appointmentService.create(payload);
+
+      // ── Atualiza estoque dos produtos do catálogo ──────────────────
+      const stockUpdates = consumables.filter((c) => c.productId);
+      if (stockUpdates.length > 0) {
+        await Promise.all(
+          stockUpdates.map(async (c) => {
+            const catalogItem = catalogProducts.find((p) => p.id === c.productId);
+            if (!catalogItem) return;
+            const newStock = Math.max(0, (catalogItem.stock || 0) - (c.qty || 1));
+            try {
+              await productService.update(c.productId, { ...catalogItem, stock: newStock });
+              // Atualiza estado local do catálogo para refletir o novo estoque
+              setCatalogProducts((prev) =>
+                prev.map((p) => p.id === c.productId ? { ...p, stock: newStock } : p)
+              );
+            } catch {
+              // Falha silenciosa no estoque — o atendimento já foi salvo
+            }
+          })
+        );
+      }
+      // ──────────────────────────────────────────────────────────────
+
       onSaved(data.appointment);
       setForm(EMPTY_FORM);
       setConsumables([]);
       setConsInput(EMPTY_CONS);
       setErrors({});
+      setShowCatalog(false);
     } catch (err) {
       setApiError(err.message || 'Erro ao registrar atendimento. Tente novamente.');
     } finally {
@@ -153,12 +249,16 @@ export default function AppointmentForm({ barberName, onSaved }) {
             id="f-cut"
             className={`field-select${errors.cut ? ' error' : ''}`}
             value={form.cut}
-            onChange={(e) => set('cut', e.target.value)}
+            onChange={handleCutChange}
             aria-required="true"
             aria-invalid={!!errors.cut}
           >
             <option value="">Selecionar corte...</option>
-            {CUTS.map((c) => <option key={c} value={c}>{c}</option>)}
+            {CUTS.map((c) => (
+              <option key={c.label} value={c.label}>
+                {c.label} — R$ {c.price},00
+              </option>
+            ))}
           </select>
           {errors.cut && (
             <span className="field-error" role="alert">{errors.cut}</span>
@@ -205,15 +305,81 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
       {/* ── Consumíveis ── */}
       <div className="consumables-section">
-        <div className="field-label">
-          <i className="ti ti-package" aria-hidden="true" />
-          Consumíveis e Produtos
+        <div className="consumables-section__header">
+          <div className="field-label">
+            <i className="ti ti-package" aria-hidden="true" />
+            Consumíveis e Produtos
+          </div>
+          {catalogProducts.length > 0 && (
+            <button
+              type="button"
+              className="catalog-toggle-btn"
+              onClick={() => setShowCatalog((v) => !v)}
+              aria-expanded={showCatalog}
+            >
+              <i className={`ti ${showCatalog ? 'ti-chevron-up' : 'ti-layout-grid'}`} aria-hidden="true" />
+              {showCatalog ? 'Fechar catálogo' : 'Ver catálogo'}
+            </button>
+          )}
         </div>
 
+        {/* Catálogo de produtos cadastrados */}
+        {showCatalog && catalogProducts.length > 0 && (
+          <div className="catalog-grid">
+            {catalogProducts.map((p) => {
+              const inCart = consumables.find((c) => c.productId === p.id);
+              const outOfStock = p.stock <= 0;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`catalog-product-btn${inCart ? ' catalog-product-btn--active' : ''}${outOfStock ? ' catalog-product-btn--disabled' : ''}`}
+                  onClick={() => !outOfStock && addFromCatalog(p)}
+                  disabled={outOfStock}
+                  title={
+                    outOfStock
+                      ? `${p.name} — sem estoque`
+                      : `Adicionar ${p.name} — R$ ${parseFloat(p.price).toFixed(2)}`
+                  }
+                >
+                  <span className="catalog-product-btn__name">{p.name}</span>
+                  <span className="catalog-product-btn__price">
+                    R$ {parseFloat(p.price).toFixed(2)}
+                  </span>
+
+                  <span className="catalog-product-btn__stock-row">
+                    {outOfStock ? (
+                      <span className="catalog-product-btn__out">sem estoque</span>
+                    ) : p.stock <= 2 ? (
+                      <span className="catalog-product-btn__low" title="Estoque baixo">
+                        <i className="ti ti-alert-triangle" aria-hidden="true" />
+                        {p.stock} restante{p.stock !== 1 ? 's' : ''}
+                      </span>
+                    ) : (
+                      <span className="catalog-product-btn__stock-ok">
+                        {p.stock} em estoque
+                      </span>
+                    )}
+
+                    {/* Badge de quantidade no carrinho */}
+                    {inCart && (
+                      <span className="catalog-product-btn__cart-badge">
+                        ×{inCart.qty}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Lista de consumíveis adicionados */}
         {consumables.length > 0 && (
           <div className="consumables-list">
             {consumables.map((c, i) => (
               <div className="consumable-row" key={i}>
+                {/* Botão remover */}
                 <button
                   className="consumable-tag__remove"
                   onClick={() => removeConsumable(i)}
@@ -221,15 +387,45 @@ export default function AppointmentForm({ barberName, onSaved }) {
                 >
                   <i className="ti ti-x" aria-hidden="true" />
                 </button>
+
+                {/* Nome */}
                 <span className="consumable-row__name">
                   <i className="ti ti-sparkles" aria-hidden="true" />
                   {c.name}
                 </span>
+
+                {/* Controles de quantidade */}
+                <div className="consumable-qty" aria-label={`Quantidade de ${c.name}`}>
+                  <button
+                    className="consumable-qty__btn"
+                    onClick={() => changeQty(i, -1)}
+                    disabled={(c.qty || 1) <= 1}
+                    aria-label="Diminuir quantidade"
+                  >
+                    <i className="ti ti-minus" aria-hidden="true" />
+                  </button>
+                  <span className="consumable-qty__value">{c.qty || 1}</span>
+                  <button
+                    className="consumable-qty__btn"
+                    onClick={() => changeQty(i, +1)}
+                    aria-label="Aumentar quantidade"
+                  >
+                    <i className="ti ti-plus" aria-hidden="true" />
+                  </button>
+                </div>
+
+                {/* Preço total do item (unitário × qty) */}
                 <span className="consumable-row__price">
-                  R$ {parseFloat(c.price).toFixed(2)}
+                  R$ {(parseFloat(c.price) * (c.qty || 1)).toFixed(2)}
+                  {(c.qty || 1) > 1 && (
+                    <span className="consumable-row__unit-price">
+                      {' '}(R$ {parseFloat(c.price).toFixed(2)} × {c.qty})
+                    </span>
+                  )}
                 </span>
               </div>
             ))}
+
             <div className="consumables-subtotal">
               <span>Subtotal consumíveis:</span>
               <span className="subtotal-valor">R$ {consTotal.toFixed(2)}</span>
@@ -237,17 +433,16 @@ export default function AppointmentForm({ barberName, onSaved }) {
           </div>
         )}
 
+        {/* Adição manual */}
         <div className="consumables-add-row">
           <input
             className="consumables-add-input consumables-add-input--name"
-            list="products-datalist"
             placeholder="Nome do produto..."
             value={consInput.name}
             onChange={(e) => setConsInput((p) => ({ ...p, name: e.target.value }))}
             onKeyDown={(e) => e.key === 'Enter' && addConsumable()}
             aria-label="Nome do consumível"
           />
-
           <input
             className="consumables-add-input consumables-add-input--price"
             type="number"
@@ -259,8 +454,7 @@ export default function AppointmentForm({ barberName, onSaved }) {
             onKeyDown={(e) => e.key === 'Enter' && addConsumable()}
             aria-label="Preço do consumível"
           />
-
-          <button className="consumables-add-btn" onClick={addConsumable}>
+          <button className="consumables-add-btn" onClick={() => addConsumable()}>
             <i className="ti ti-plus" aria-hidden="true" />
             <span>Adicionar</span>
           </button>

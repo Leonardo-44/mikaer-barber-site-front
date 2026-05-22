@@ -378,6 +378,220 @@
 /* ─── Ícone sparkles ──────────────────────────── */
 .ti-sparkles { margin: 0 4px 0 0; }
 
+/* Cabeçalho da seção de consumíveis */
+.consumables-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+ 
+.consumables-section__header .field-label {
+  margin-bottom: 0;
+}
+ 
+/* Botão para abrir/fechar catálogo */
+.catalog-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid var(--dash-border, #2a2a2a);
+  border-radius: 6px;
+  color: var(--dash-accent, #d4a843);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+ 
+.catalog-toggle-btn:hover {
+  background: rgba(212, 168, 67, 0.08);
+  border-color: var(--dash-accent, #d4a843);
+}
+ 
+/* Grid de produtos do catálogo */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--dash-border, #2a2a2a);
+  border-radius: 8px;
+}
+ 
+/* Botão de produto do catálogo */
+.catalog-product-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  background: var(--dash-surface, #1a1a1a);
+  border: 1px solid var(--dash-border, #2a2a2a);
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+ 
+.catalog-product-btn:hover {
+  border-color: var(--dash-accent, #d4a843);
+  background: rgba(212, 168, 67, 0.07);
+  transform: translateY(-1px);
+}
+ 
+.catalog-product-btn:active {
+  transform: translateY(0);
+}
+ 
+.catalog-product-btn__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dash-text, #f0f0f0);
+  line-height: 1.2;
+}
+ 
+.catalog-product-btn__price {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dash-accent, #d4a843);
+}
+ 
+.catalog-product-btn__low {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #f59e0b;
+  font-size: 12px;
+}
+
+/* ── Controles de quantidade ── */
+.consumable-qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+ 
+.consumable-qty__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #333);
+  background: var(--bg-secondary, #1a1a1a);
+  color: var(--text-secondary, #aaa);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  padding: 0;
+  line-height: 1;
+  font-size: 12px;
+}
+ 
+.consumable-qty__btn:hover:not(:disabled) {
+  background: var(--accent, #d4a843);
+  color: #000;
+  border-color: var(--accent, #d4a843);
+}
+ 
+.consumable-qty__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+ 
+.consumable-qty__value {
+  min-width: 22px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f0);
+}
+ 
+/* Preço unitário discreto ao lado do total */
+.consumable-row__unit-price {
+  font-size: 11px;
+  color: var(--text-muted, #666);
+  font-weight: 400;
+}
+ 
+/* Reordenamento do consumable-row para acomodar qty */
+.consumable-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+ 
+.consumable-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+ 
+.consumable-row__price {
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+ 
+/* ── Catálogo — estados melhorados ── */
+ 
+/* Produto já no carrinho */
+.catalog-product-btn--active {
+  border-color: var(--accent, #d4a843) !important;
+  background: color-mix(in srgb, var(--accent, #d4a843) 10%, transparent) !important;
+}
+ 
+/* Produto sem estoque */
+.catalog-product-btn--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+ 
+/* Linha de estoque dentro do botão do catálogo */
+.catalog-product-btn__stock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+ 
+.catalog-product-btn__stock-ok {
+  font-size: 10px;
+  color: var(--text-muted, #666);
+}
+ 
+.catalog-product-btn__out {
+  font-size: 10px;
+  color: var(--red-light, #e05252);
+  font-weight: 600;
+}
+ 
+/* Badge de quantidade no carrinho (ex: ×2) */
+.catalog-product-btn__cart-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent, #d4a843);
+  color: #000;
+  border-radius: 999px;
+  padding: 1px 6px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+ 
+
 /* ================================================================
    RESPONSIVIDADE
    ================================================================ */
@@ -439,6 +653,12 @@
   .appt-form-hint {
     justify-content: center;
     text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
 
