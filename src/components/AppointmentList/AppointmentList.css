@@ -86,6 +86,7 @@
 
 /* Chips de filtro */
 .appt-filters {
+  margin: 8px 0;
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
@@ -461,6 +462,153 @@
   font-size: 18px;
   color: var(--gold);
   font-weight: 700;
+}
+
+/* ── Bloco de filtro de data ── */
+.appt-date-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+ 
+/* Botão "Hoje" */
+.appt-today-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--dash-border, #2a2a2a);
+  background: var(--dash-surface, #1a1a1a);
+  color: var(--dash-text-muted, #888);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+ 
+.appt-today-btn:hover {
+  border-color: var(--dash-accent, #d4a843);
+  color: var(--dash-accent, #d4a843);
+}
+ 
+.appt-today-btn--active {
+  background: var(--dash-accent, #d4a843);
+  border-color: var(--dash-accent, #d4a843);
+  color: #111;
+  font-weight: 600;
+}
+ 
+/* Input de data */
+.appt-date-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+ 
+.appt-date-input-wrap > .ti {
+  position: absolute;
+  left: 10px;
+  font-size: 15px;
+  color: var(--dash-text-muted, #888);
+  pointer-events: none;
+  z-index: 1;
+}
+ 
+.appt-date-input {
+  height: 36px;
+  padding: 0 30px 0 32px;
+  background: var(--dash-surface, #1a1a1a);
+  border: 1px solid var(--dash-border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--dash-text, #f0f0f0);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  /* remove o ícone nativo do browser */
+  color-scheme: dark;
+}
+ 
+.appt-date-input:focus {
+  border-color: var(--dash-accent, #d4a843);
+}
+ 
+.appt-date-clear {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dash-text-muted, #888);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: color 0.15s;
+}
+ 
+.appt-date-clear:hover {
+  color: var(--dash-text, #f0f0f0);
+}
+ 
+/* Label informativa da data ativa */
+.appt-date-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--dash-text-muted, #888);
+  margin: 8px 0;
+  padding: 6px 10px;
+  background: rgba(212, 168, 67, 0.07);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 8px;
+}
+ 
+.appt-date-label .ti {
+  color: var(--dash-accent, #d4a843);
+  font-size: 14px;
+}
+ 
+.appt-date-label__clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dash-accent, #d4a843);
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+  transition: opacity 0.15s;
+}
+ 
+.appt-date-label__clear:hover {
+  opacity: 0.7;
+}
+ 
+/* ── Responsivo ── */
+@media (max-width: 600px) {
+  .appt-date-wrap {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+ 
+  .appt-today-btn {
+    flex: 1;
+    justify-content: center;
+  }
+ 
+  .appt-date-input-wrap {
+    flex: 1;
+  }
+ 
+  .appt-date-input {
+    width: 100%;
+  }
 }
 
 /* ─── Responsivo ──────────────────────────────── */
