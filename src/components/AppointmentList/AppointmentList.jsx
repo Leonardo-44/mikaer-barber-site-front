@@ -33,9 +33,9 @@ function normalize(a) {
 }
 
 const FILTERS = [
-  { value: "all",       label: "Todos"      },
-  { value: "pending",   label: "Pendentes"  },
-  { value: "done",      label: "Concluídos" },
+  { value: "all", label: "Todos" },
+  { value: "pending", label: "Pendentes" },
+  { value: "done", label: "Concluídos" },
   { value: "cancelled", label: "Cancelados" },
 ];
 
@@ -54,14 +54,23 @@ function DeleteModal({ onConfirm, onCancel }) {
     >
       <div className="modal-card modal-card--sm slide-up">
         <div className="modal-header">
-          <div className="modal-header__icon modal-header__icon--danger" aria-hidden="true">
+          <div
+            className="modal-header__icon modal-header__icon--danger"
+            aria-hidden="true"
+          >
             <i className="ti ti-trash" />
           </div>
           <div>
-            <h2 className="modal-header__title" id="del-title">Remover atendimento</h2>
+            <h2 className="modal-header__title" id="del-title">
+              Remover atendimento
+            </h2>
             <p className="modal-header__sub">Essa ação não pode ser desfeita</p>
           </div>
-          <button className="modal-close" onClick={onCancel} aria-label="Fechar">
+          <button
+            className="modal-close"
+            onClick={onCancel}
+            aria-label="Fechar"
+          >
             <i className="ti ti-x" aria-hidden="true" />
           </button>
         </div>
@@ -70,7 +79,9 @@ function DeleteModal({ onConfirm, onCancel }) {
           Tem certeza que deseja remover este atendimento permanentemente?
         </p>
         <div className="modal-footer">
-          <button className="modal-btn modal-btn--cancel" onClick={onCancel}>Cancelar</button>
+          <button className="modal-btn modal-btn--cancel" onClick={onCancel}>
+            Cancelar
+          </button>
           <button className="modal-btn modal-btn--danger" onClick={onConfirm}>
             <i className="ti ti-trash" aria-hidden="true" /> Remover
           </button>
@@ -87,9 +98,9 @@ export default function AppointmentList({
   onStatusChange,
   onEdit,
 }) {
-  const [search,        setSearch]        = useState("");
-  const [filter,        setFilter]        = useState("all");
-  const [dateFilter,    setDateFilter]    = useState("");   // "" = todos os dias
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState(""); // "" = todos os dias
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const normalized = appointments.map(normalize);
@@ -102,13 +113,17 @@ export default function AppointmentList({
       a.barber.toLowerCase().includes(q) ||
       a.clientPhone.includes(q);
     const matchStatus = filter === "all" || a.status === filter;
-    const matchDate   = !dateFilter || a.dateISO === dateFilter;
+    const matchDate = !dateFilter || a.dateISO === dateFilter;
     return matchSearch && matchStatus && matchDate;
   });
 
   const totalRevenue = filtered
     .filter((a) => a.status === "done")
     .reduce((sum, a) => sum + parseFloat(a.price || 0), 0);
+
+  // 👇 Novo: comissão 50% para o barbeiro
+  const totalBarberCommission = totalRevenue * 0.5;
+  const totalSalonRevenue = totalRevenue * 0.5;
 
   const counts = normalized.reduce((acc, a) => {
     acc[a.status] = (acc[a.status] || 0) + 1;
@@ -136,7 +151,6 @@ export default function AppointmentList({
 
   return (
     <div className="appt-list fade-in">
-
       {/* ── Toolbar ── */}
       <div className="appt-toolbar">
         <div className="appt-search-wrap">
@@ -165,7 +179,11 @@ export default function AppointmentList({
           <button
             className={`appt-today-btn${isToday ? " appt-today-btn--active" : ""}`}
             onClick={setToday}
-            title={isToday ? "Mostrando só hoje — clique para ver todos" : "Ver só os de hoje"}
+            title={
+              isToday
+                ? "Mostrando só hoje — clique para ver todos"
+                : "Ver só os de hoje"
+            }
           >
             <i className="ti ti-calendar-event" aria-hidden="true" />
             Hoje
@@ -194,7 +212,11 @@ export default function AppointmentList({
       </div>
 
       {/* ── Chips de status ── */}
-      <div className="appt-filters" role="group" aria-label="Filtrar por status">
+      <div
+        className="appt-filters"
+        role="group"
+        aria-label="Filtrar por status"
+      >
         {FILTERS.map((f) => (
           <button
             key={f.value}
@@ -216,8 +238,12 @@ export default function AppointmentList({
           <i className="ti ti-filter" aria-hidden="true" />
           {isToday
             ? "Mostrando atendimentos de hoje"
-            : `Mostrando: ${new Date(dateFilter + "T12:00:00").toLocaleDateString("pt-BR", {
-                weekday: "long", day: "2-digit", month: "long",
+            : `Mostrando: ${new Date(
+                dateFilter + "T12:00:00",
+              ).toLocaleDateString("pt-BR", {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
               })}`}
           <button
             className="appt-date-label__clear"
@@ -232,8 +258,13 @@ export default function AppointmentList({
       {/* ── Grid de cards ── */}
       {filtered.length === 0 ? (
         <div className="appt-empty-state">
-          <i className="ti ti-calendar-off appt-empty-state__icon" aria-hidden="true" />
-          <div className="appt-empty-state__title">Nenhum atendimento encontrado</div>
+          <i
+            className="ti ti-calendar-off appt-empty-state__icon"
+            aria-hidden="true"
+          />
+          <div className="appt-empty-state__title">
+            Nenhum atendimento encontrado
+          </div>
           <p className="appt-empty-state__sub">
             {search || filter !== "all" || dateFilter
               ? "Tente ajustar os filtros ou a busca."
@@ -263,7 +294,9 @@ export default function AppointmentList({
           </span>
           {totalRevenue > 0 && (
             <div className="appt-list-footer__revenue">
-              <span className="appt-list-footer__revenue-label">Faturamento filtrado</span>
+              <span className="appt-list-footer__revenue-label">
+                Faturamento filtrado
+              </span>
               <span className="appt-list-footer__revenue-value">
                 R$ {totalRevenue.toFixed(2)}
               </span>

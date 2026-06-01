@@ -1,5 +1,5 @@
 // ============================================
-//  MIKAEL BARBER — API Service (atualizado)
+//  MIKAEL BARBER — API Service
 // ============================================
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3333/api';
@@ -77,4 +77,24 @@ export const productService = {
 
   remove: (id) =>
     request(`/products/${id}`, { method: 'DELETE' }),
+};
+
+// ─── Serviços ─────────────────────────────────
+export const serviceService = {
+  getAll: () => request('/services'),
+
+  create: (payload) =>
+    request('/services', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  update: (id, payload) =>
+    request(`/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  remove: (id) =>
+    request(`/services/${id}`, { method: 'DELETE' }),
 };

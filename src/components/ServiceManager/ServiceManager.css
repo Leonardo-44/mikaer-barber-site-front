@@ -1,0 +1,426 @@
+/* ============================================
+   ServiceManager.css — Mikael Barber
+   ============================================ */
+
+.svc-manager {
+  padding-bottom: 2rem;
+}
+
+/* ── Loading ── */
+.svc-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3rem 1rem;
+  color: var(--gray-light);
+  font-size: 14px;
+}
+
+/* ── Toolbar ── */
+.svc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.svc-toolbar__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gray-light);
+  letter-spacing: 0.03em;
+}
+
+.svc-toolbar__hint .ti {
+  color: var(--gold-dark);
+  font-size: 14px;
+}
+
+.svc-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  background: var(--gold-faint);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.svc-add-btn:hover {
+  background: var(--gold-subtle);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+/* ── Grid de cards ── */
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.svc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--black-4);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  transition: var(--transition);
+}
+
+.svc-card:hover {
+  border-color: var(--gold);
+  background: var(--black-3);
+  box-shadow: var(--shadow-gold);
+}
+
+.svc-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.svc-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.svc-card__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.svc-card__price {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+
+.svc-card__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.svc-card__btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.svc-card__btn--edit {
+  color: var(--gray-light);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.svc-card__btn--edit:hover {
+  color: var(--gold);
+  border-color: var(--gold-border);
+  background: var(--gold-faint);
+}
+
+.svc-card__btn--delete {
+  color: var(--gray-light);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.svc-card__btn--delete:hover {
+  color: #E07070;
+  border-color: rgba(139,26,26,0.35);
+  background: var(--red-faint);
+}
+
+/* ── Empty state ── */
+.svc-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--gray-light);
+}
+
+.svc-empty__icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 12px;
+  color: var(--gold-dark);
+  opacity: 0.4;
+}
+
+.svc-empty__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white-dim);
+  margin-bottom: 6px;
+}
+
+.svc-empty__sub {
+  font-size: 13px;
+  color: var(--gray-light);
+}
+
+/* ── Modal backdrop ── */
+.svc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.svc-modal-card {
+  background: var(--black-3);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-card);
+}
+
+.svc-modal-card--sm {
+  max-width: 380px;
+}
+
+/* ── Modal header ── */
+.svc-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.svc-modal-header__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.svc-modal-header__icon--danger {
+  background: var(--red-faint);
+  border-color: rgba(139,26,26,0.35);
+  color: #E07070;
+}
+
+.svc-modal-header__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+
+.svc-modal-header__sub {
+  font-size: 12px;
+  color: var(--gray-light);
+}
+
+.svc-modal-close {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: var(--gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.svc-modal-close:hover {
+  color: var(--white);
+  border-color: var(--gold-border);
+  background: var(--gold-faint);
+}
+
+.svc-modal-divider {
+  height: 1px;
+  background: var(--gold-border);
+  margin: 1rem 0;
+  opacity: 0.5;
+}
+
+/* ── Modal body ── */
+.svc-modal-body {
+  padding: 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.svc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.svc-field__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-light);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.svc-field__wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.svc-field__icon {
+  position: absolute;
+  left: 10px;
+  color: var(--gold-dark);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.svc-field__input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  background: var(--black-4);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.svc-field__input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: var(--black-5);
+}
+
+.svc-field--error .svc-field__input {
+  border-color: var(--red-light);
+}
+
+.svc-field__hint {
+  font-size: 11px;
+  color: var(--red-light);
+}
+
+/* ── Modal confirm text ── */
+.svc-modal-confirm__text {
+  padding: 0 1.25rem;
+  font-size: 13px;
+  color: var(--white-dim);
+  line-height: 1.6;
+}
+
+.svc-modal-confirm__text strong {
+  color: var(--white);
+}
+
+/* ── Modal footer ── */
+.svc-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 1.25rem;
+}
+
+.svc-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.svc-btn--cancel {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.10);
+  color: var(--gray-light);
+}
+
+.svc-btn--cancel:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--white);
+}
+
+.svc-btn--save {
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-border);
+  color: var(--gold);
+}
+
+.svc-btn--save:hover:not(:disabled) {
+  background: var(--gold-subtle);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.svc-btn--save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.svc-btn--danger {
+  background: var(--red-faint);
+  border: 1px solid rgba(139,26,26,0.4);
+  color: #E07070;
+}
+
+.svc-btn--danger:hover {
+  background: rgba(139,26,26,0.3);
+  color: #F09090;
+}

@@ -10,14 +10,23 @@ import { appointmentService, authService } from "../../services/api";
 import AppointmentForm from "../AppointmentForm/AppointmentForm";
 import AppointmentList from "../AppointmentList/AppointmentList";
 import ProductList from "../ProductList/ProductList";
+import FinanceiroScreen from "../FinanceiroScreen/FinanceiroScreen";
+import ServiceManager from "../ServiceManager/ServiceManager";
 import "./Dashboard.css";
 
 const INITIAL_BARBERS = [];
 
 const NAV_ITEMS = [
-  { id: "produtos", label: "Produtos", icon: "ti-package" },
-  { id: "novo", label: "Novo Atendimento", icon: "ti-plus" },
-  { id: "lista", label: "Agendamentos", icon: "ti-calendar" }
+  { id: "produtos", label: "Produtos", icon: "ti-package", adminOnly: false },
+  { id: "novo", label: "Novo Atendimento", icon: "ti-plus", adminOnly: false },
+  { id: "lista", label: "Agendamentos", icon: "ti-calendar", adminOnly: false },
+  {
+    id: "financeiro",
+    label: "Financeiro",
+    icon: "ti-cash-banknote",
+    adminOnly: false,
+  },
+  { id: "servicos", label: "Serviços", icon: "ti-scissors", adminOnly: true },
 ];
 
 // ── Avatar com inicial do nome ────────────────────
@@ -536,17 +545,19 @@ export default function Dashboard() {
           aria-label="Menu lateral"
         >
           <div className="sidebar__section-title">Menu</div>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              className={`sidebar__item${tab === item.id ? " active" : ""}`}
-              onClick={() => handleNavClick(item.id)}
-              aria-current={tab === item.id ? "page" : undefined}
-            >
-              <i className={`ti ${item.icon}`} aria-hidden="true" />
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map(
+            (item) => (
+              <button
+                key={item.id}
+                className={`sidebar__item${tab === item.id ? " active" : ""}`}
+                onClick={() => handleNavClick(item.id)}
+                aria-current={tab === item.id ? "page" : undefined}
+              >
+                <i className={`ti ${item.icon}`} aria-hidden="true" />
+                <span>{item.label}</span>
+              </button>
+            ),
+          )}
 
           <div className="sidebar__divider" />
           <div className="sidebar__section-title">Hoje</div>
@@ -656,6 +667,35 @@ export default function Dashboard() {
                 <h2 className="section-header__title">Produtos</h2>
               </div>
               <ProductList fireToast={fireToast} />
+            </>
+          )}
+
+          {tab === "financeiro" && (
+            <>
+              <div className="section-header">
+                <h2 className="section-header__title">Financeiro</h2>
+                <div className="section-header__line" aria-hidden="true" />
+                <span className="section-header__meta">
+                  Comissões e faturamento
+                </span>
+              </div>
+              <FinanceiroScreen
+                appointments={appointments}
+                adminUsername={import.meta.env.VITE_ADMIN_USERNAME}
+              />
+            </>
+          )}
+
+          {tab === "servicos" && isAdmin && (
+            <>
+              <div className="section-header">
+                <h2 className="section-header__title">Serviços</h2>
+                <div className="section-header__line" aria-hidden="true" />
+                <span className="section-header__meta">
+                  Gerencie cortes e valores
+                </span>
+              </div>
+              <ServiceManager fireToast={fireToast} />
             </>
           )}
         </main>
