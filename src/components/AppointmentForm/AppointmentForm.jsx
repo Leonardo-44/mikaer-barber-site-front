@@ -13,12 +13,12 @@ import "./AppointmentForm.css";
 const EMPTY_FORM = {
   clientName: "",
   clientPhone: "",
-  cut: "",
-  price: "",
   status: "done",
   obs: "",
 };
 const EMPTY_CONS = { name: "", price: "" };
+// Serviço "vazio" para o seletor
+const EMPTY_SERVICE_INPUT = { cut: "", price: "" };
 
 function formatPhone(value) {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -31,7 +31,11 @@ function formatPhone(value) {
 
 export default function AppointmentForm({ barberName, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
-  // consumable shape: { name, price, qty, productId (null = manual) }
+  // Lista de serviços do atendimento: [{ cut, price }]
+  const [services, setServices] = useState([]);
+  // Controla o seletor de "próximo serviço a adicionar"
+  const [serviceInput, setServiceInput] = useState(EMPTY_SERVICE_INPUT);
+
   const [consumables, setConsumables] = useState([]);
   const [consInput, setConsInput] = useState(EMPTY_CONS);
   const [errors, setErrors] = useState({});
@@ -41,20 +45,18 @@ export default function AppointmentForm({ barberName, onSaved }) {
   const [showCatalog, setShowCatalog] = useState(false);
   const [cuts, setCuts] = useState([]);
 
-  // Carrega serviços cadastrados pelo admin
   useEffect(() => {
     serviceService
       .getAll()
       .then((data) => setCuts(data.services || []))
-      .catch(() => {}); // silencioso — usa lista vazia se falhar
+      .catch(() => {});
   }, []);
 
-  // Carrega produtos cadastrados
   useEffect(() => {
     productService
       .getAll()
       .then((data) => setCatalogProducts(data.products || []))
-      .catch(() => {}); // silencioso — catálogo é opcional
+      .catch(() => {});
   }, []);
 
   const set = (field, value) => {
@@ -63,22 +65,46 @@ export default function AppointmentForm({ barberName, onSaved }) {
     if (apiError) setApiError("");
   };
 
-  // Ao selecionar o corte, preenche o preço automaticamente
-  const handleCutChange = (e) => {
+  // ── Serviços ─────────────────────────────────────────────────────────────
+
+  const handleServiceCutChange = (e) => {
     const label = e.target.value;
-    const found = cuts.find((c) => c.label === label); // ← era CUTS, agora é cuts
-    set("cut", label);
-    if (found) set("price", String(found.price));
+    const found = cuts.find((c) => c.label === label);
+    setServiceInput((prev) => ({
+      cut: label,
+      price: found ? String(found.price) : prev.price,
+    }));
+    if (errors.services) setErrors((prev) => ({ ...prev, services: "" }));
+    if (apiError) setApiError("");
   };
 
-  // Soma: preço × quantidade de cada consumível
+  const addService = () => {
+    const trimmed = serviceInput.cut.trim();
+    if (!trimmed) return;
+    setServices((prev) => [
+      ...prev,
+      { cut: trimmed, price: serviceInput.price || "0" },
+    ]);
+    setServiceInput(EMPTY_SERVICE_INPUT);
+    if (errors.services) setErrors((prev) => ({ ...prev, services: "" }));
+  };
+
+  const removeService = (index) =>
+    setServices((prev) => prev.filter((_, i) => i !== index));
+
+  // Totais
+  const servicesTotal = services.reduce(
+    (sum, s) => sum + parseFloat(s.price || 0),
+    0,
+  );
   const consTotal = consumables.reduce(
     (sum, c) => sum + parseFloat(c.price || 0) * (c.qty || 1),
     0,
   );
-  const grandTotal = parseFloat(form.price || 0) + consTotal;
+  const grandTotal = servicesTotal + consTotal;
 
-  // Adiciona consumível manual
+  // ── Consumíveis ───────────────────────────────────────────────────────────
+
   const addConsumable = (name = consInput.name, price = consInput.price) => {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -89,16 +115,14 @@ export default function AppointmentForm({ barberName, onSaved }) {
     setConsInput(EMPTY_CONS);
   };
 
-  // Adiciona produto do catálogo — incrementa qty se já estiver na lista
   const addFromCatalog = (product) => {
     setConsumables((prev) => {
       const existingIdx = prev.findIndex((c) => c.productId === product.id);
       if (existingIdx >= 0) {
-        // Verifica se há estoque suficiente
         const currentQty = prev[existingIdx].qty;
         const catalogItem = catalogProducts.find((p) => p.id === product.id);
         const availableStock = catalogItem?.stock ?? Infinity;
-        if (currentQty >= availableStock) return prev; // não incrementa além do estoque
+        if (currentQty >= availableStock) return prev;
         return prev.map((c, i) =>
           i === existingIdx ? { ...c, qty: c.qty + 1 } : c,
         );
@@ -115,13 +139,11 @@ export default function AppointmentForm({ barberName, onSaved }) {
     });
   };
 
-  // Altera a quantidade de um consumível (+1 / -1)
   const changeQty = (index, delta) => {
     setConsumables((prev) =>
       prev.map((c, i) => {
         if (i !== index) return c;
         const newQty = Math.max(1, (c.qty || 1) + delta);
-        // Para itens do catálogo, não ultrapassar o estoque disponível
         if (c.productId) {
           const catalogItem = catalogProducts.find((p) => p.id === c.productId);
           const maxStock = catalogItem?.stock ?? Infinity;
@@ -135,10 +157,12 @@ export default function AppointmentForm({ barberName, onSaved }) {
   const removeConsumable = (index) =>
     setConsumables((prev) => prev.filter((_, i) => i !== index));
 
+  // ── Validação & Save ──────────────────────────────────────────────────────
+
   const validate = () => {
     const e = {};
     if (!form.clientName.trim()) e.clientName = "Obrigatório";
-    if (!form.cut) e.cut = "Selecione um corte";
+    if (services.length === 0) e.services = "Adicione ao menos um serviço";
     return e;
   };
 
@@ -153,12 +177,20 @@ export default function AppointmentForm({ barberName, onSaved }) {
     setApiError("");
 
     try {
+      // Mantém compatibilidade: "cut" e "servicePrice" representam o primeiro
+      // serviço; o array completo vai em "services" para o backend usar.
       const payload = {
         clientName: form.clientName.trim(),
         clientPhone: form.clientPhone.trim(),
-        cut: form.cut,
-        servicePrice: parseFloat(form.price || 0),
+        // Primeiro serviço como campos legados (caso o backend ainda os use)
+        cut: services.map((s) => s.cut).join(" + "),
+        servicePrice: servicesTotal,
         price: grandTotal.toFixed(2),
+        // Array completo de serviços
+        services: services.map((s) => ({
+          cut: s.cut,
+          price: parseFloat(s.price || 0),
+        })),
         consumables: consumables.map((c) => ({
           name: c.name,
           price: c.price,
@@ -171,40 +203,35 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
       const data = await appointmentService.create(payload);
 
-      // ── Atualiza estoque dos produtos do catálogo ──────────────────
+      // Atualiza estoque dos produtos do catálogo
       const stockUpdates = consumables.filter((c) => c.productId);
       if (stockUpdates.length > 0) {
         await Promise.all(
           stockUpdates.map(async (c) => {
-            const catalogItem = catalogProducts.find(
-              (p) => p.id === c.productId,
-            );
+            const catalogItem = catalogProducts.find((p) => p.id === c.productId);
             if (!catalogItem) return;
-            const newStock = Math.max(
-              0,
-              (catalogItem.stock || 0) - (c.qty || 1),
-            );
+            const newStock = Math.max(0, (catalogItem.stock || 0) - (c.qty || 1));
             try {
               await productService.update(c.productId, {
                 ...catalogItem,
                 stock: newStock,
               });
-              // Atualiza estado local do catálogo para refletir o novo estoque
               setCatalogProducts((prev) =>
                 prev.map((p) =>
                   p.id === c.productId ? { ...p, stock: newStock } : p,
                 ),
               );
             } catch {
-              // Falha silenciosa no estoque — o atendimento já foi salvo
+              // Falha silenciosa no estoque
             }
           }),
         );
       }
-      // ──────────────────────────────────────────────────────────────
 
       onSaved(data.appointment);
       setForm(EMPTY_FORM);
+      setServices([]);
+      setServiceInput(EMPTY_SERVICE_INPUT);
       setConsumables([]);
       setConsInput(EMPTY_CONS);
       setErrors({});
@@ -218,11 +245,10 @@ export default function AppointmentForm({ barberName, onSaved }) {
     }
   };
 
-  const isValid = form.clientName.trim() && form.cut && !saving;
+  const isValid = form.clientName.trim() && services.length > 0 && !saving;
 
   return (
     <div className="appt-form-card fade-in">
-      {/* Erro de API */}
       {apiError && (
         <div className="form-api-error" role="alert">
           <i className="ti ti-alert-triangle" aria-hidden="true" />
@@ -272,22 +298,61 @@ export default function AppointmentForm({ barberName, onSaved }) {
         </div>
       </div>
 
-      {/* ── Corte e Preço ── */}
-      <div className="form-row">
-        <div>
-          <label className="field-label field-label--required" htmlFor="f-cut">
+      {/* ── Serviços ── */}
+      <div className="services-section">
+        <div className="services-section__header">
+          <div className={`field-label${errors.services ? " field-label--error" : ""}`}>
             <i className="ti ti-scissors" aria-hidden="true" />
-            Tipo de Corte
-          </label>
+            Serviços
+            <span className="field-label--required-mark"> *</span>
+          </div>
+          {services.length > 0 && (
+            <span className="services-section__count">
+              {services.length} serviço{services.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+
+        {/* Lista de serviços adicionados */}
+        {services.length > 0 && (
+          <div className="services-list">
+            {services.map((s, i) => (
+              <div className="service-row" key={i}>
+                <button
+                  className="service-row__remove"
+                  onClick={() => removeService(i)}
+                  aria-label={`Remover ${s.cut}`}
+                  type="button"
+                >
+                  <i className="ti ti-x" aria-hidden="true" />
+                </button>
+                <span className="service-row__name">
+                  <i className="ti ti-scissors" aria-hidden="true" />
+                  {s.cut}
+                </span>
+                <span className="service-row__price">
+                  R$ {parseFloat(s.price).toFixed(2)}
+                </span>
+              </div>
+            ))}
+            {services.length > 1 && (
+              <div className="services-subtotal">
+                <span>Subtotal serviços:</span>
+                <span className="subtotal-valor">R$ {servicesTotal.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Seletor para adicionar serviço */}
+        <div className="services-add-row">
           <select
-            id="f-cut"
-            className={`field-select${errors.cut ? " error" : ""}`}
-            value={form.cut}
-            onChange={handleCutChange}
-            aria-required="true"
-            aria-invalid={!!errors.cut}
+            className={`field-select services-add-select${errors.services ? " error" : ""}`}
+            value={serviceInput.cut}
+            onChange={handleServiceCutChange}
+            aria-label="Selecionar serviço"
           >
-            <option value="">Selecionar corte...</option>
+            <option value="">Selecionar serviço...</option>
             {cuts.length === 0 ? (
               <option disabled value="">
                 Nenhum serviço cadastrado
@@ -300,29 +365,37 @@ export default function AppointmentForm({ barberName, onSaved }) {
               ))
             )}
           </select>
-          {errors.cut && (
-            <span className="field-error" role="alert">
-              {errors.cut}
-            </span>
-          )}
-        </div>
 
-        <div>
-          <label className="field-label" htmlFor="f-price">
-            <i className="ti ti-currency-dollar" aria-hidden="true" />
-            Valor do Serviço (R$)
-          </label>
           <input
-            id="f-price"
-            className="field-input"
+            className="field-input services-add-price"
             type="number"
-            placeholder="0,00"
+            placeholder="R$ 0,00"
             min="0"
             step="0.50"
-            value={form.price}
-            onChange={(e) => set("price", e.target.value)}
+            value={serviceInput.price}
+            onChange={(e) =>
+              setServiceInput((prev) => ({ ...prev, price: e.target.value }))
+            }
+            aria-label="Valor do serviço"
           />
+
+          <button
+            type="button"
+            className="services-add-btn"
+            onClick={addService}
+            disabled={!serviceInput.cut}
+            title="Adicionar serviço"
+          >
+            <i className="ti ti-plus" aria-hidden="true" />
+            <span>Adicionar</span>
+          </button>
         </div>
+
+        {errors.services && (
+          <span className="field-error" role="alert">
+            {errors.services}
+          </span>
+        )}
       </div>
 
       {/* ── Status ── */}
@@ -368,7 +441,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
           )}
         </div>
 
-        {/* Catálogo de produtos cadastrados */}
         {showCatalog && catalogProducts.length > 0 && (
           <div className="catalog-grid">
             {catalogProducts.map((p) => {
@@ -391,21 +463,12 @@ export default function AppointmentForm({ barberName, onSaved }) {
                   <span className="catalog-product-btn__price">
                     R$ {parseFloat(p.price).toFixed(2)}
                   </span>
-
                   <span className="catalog-product-btn__stock-row">
                     {outOfStock ? (
-                      <span className="catalog-product-btn__out">
-                        sem estoque
-                      </span>
+                      <span className="catalog-product-btn__out">sem estoque</span>
                     ) : p.stock <= 2 ? (
-                      <span
-                        className="catalog-product-btn__low"
-                        title="Estoque baixo"
-                      >
-                        <i
-                          className="ti ti-alert-triangle"
-                          aria-hidden="true"
-                        />
+                      <span className="catalog-product-btn__low" title="Estoque baixo">
+                        <i className="ti ti-alert-triangle" aria-hidden="true" />
                         {p.stock} restante{p.stock !== 1 ? "s" : ""}
                       </span>
                     ) : (
@@ -413,8 +476,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
                         {p.stock} em estoque
                       </span>
                     )}
-
-                    {/* Badge de quantidade no carrinho */}
                     {inCart && (
                       <span className="catalog-product-btn__cart-badge">
                         ×{inCart.qty}
@@ -427,12 +488,10 @@ export default function AppointmentForm({ barberName, onSaved }) {
           </div>
         )}
 
-        {/* Lista de consumíveis adicionados */}
         {consumables.length > 0 && (
           <div className="consumables-list">
             {consumables.map((c, i) => (
               <div className="consumable-row" key={i}>
-                {/* Botão remover */}
                 <button
                   className="consumable-tag__remove"
                   onClick={() => removeConsumable(i)}
@@ -440,18 +499,11 @@ export default function AppointmentForm({ barberName, onSaved }) {
                 >
                   <i className="ti ti-x" aria-hidden="true" />
                 </button>
-
-                {/* Nome */}
                 <span className="consumable-row__name">
                   <i className="ti ti-sparkles" aria-hidden="true" />
                   {c.name}
                 </span>
-
-                {/* Controles de quantidade */}
-                <div
-                  className="consumable-qty"
-                  aria-label={`Quantidade de ${c.name}`}
-                >
+                <div className="consumable-qty" aria-label={`Quantidade de ${c.name}`}>
                   <button
                     className="consumable-qty__btn"
                     onClick={() => changeQty(i, -1)}
@@ -469,8 +521,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
                     <i className="ti ti-plus" aria-hidden="true" />
                   </button>
                 </div>
-
-                {/* Preço total do item (unitário × qty) */}
                 <span className="consumable-row__price">
                   R$ {(parseFloat(c.price) * (c.qty || 1)).toFixed(2)}
                   {(c.qty || 1) > 1 && (
@@ -482,7 +532,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
                 </span>
               </div>
             ))}
-
             <div className="consumables-subtotal">
               <span>Subtotal consumíveis:</span>
               <span className="subtotal-valor">R$ {consTotal.toFixed(2)}</span>
@@ -490,15 +539,12 @@ export default function AppointmentForm({ barberName, onSaved }) {
           </div>
         )}
 
-        {/* Adição manual */}
         <div className="consumables-add-row">
           <input
             className="consumables-add-input consumables-add-input--name"
             placeholder="Nome do produto..."
             value={consInput.name}
-            onChange={(e) =>
-              setConsInput((p) => ({ ...p, name: e.target.value }))
-            }
+            onChange={(e) => setConsInput((p) => ({ ...p, name: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && addConsumable()}
             aria-label="Nome do consumível"
           />
@@ -509,16 +555,11 @@ export default function AppointmentForm({ barberName, onSaved }) {
             min="0"
             step="0.50"
             value={consInput.price}
-            onChange={(e) =>
-              setConsInput((p) => ({ ...p, price: e.target.value }))
-            }
+            onChange={(e) => setConsInput((p) => ({ ...p, price: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && addConsumable()}
             aria-label="Preço do consumível"
           />
-          <button
-            className="consumables-add-btn"
-            onClick={() => addConsumable()}
-          >
+          <button className="consumables-add-btn" onClick={() => addConsumable()}>
             <i className="ti ti-plus" aria-hidden="true" />
             <span>Adicionar</span>
           </button>
@@ -542,14 +583,14 @@ export default function AppointmentForm({ barberName, onSaved }) {
       </div>
 
       {/* ── Resumo do total ── */}
-      {(form.price || consTotal > 0) && (
+      {(services.length > 0 || consTotal > 0) && (
         <div className="price-summary">
-          {form.price && (
-            <div className="price-summary__row">
-              <span>Serviço</span>
-              <span>R$ {parseFloat(form.price || 0).toFixed(2)}</span>
+          {services.map((s, i) => (
+            <div className="price-summary__row" key={i}>
+              <span>{s.cut}</span>
+              <span>R$ {parseFloat(s.price || 0).toFixed(2)}</span>
             </div>
-          )}
+          ))}
           {consTotal > 0 && (
             <div className="price-summary__row">
               <span>Consumíveis</span>

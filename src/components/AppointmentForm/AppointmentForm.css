@@ -590,6 +590,167 @@
   line-height: 1.4;
   flex-shrink: 0;
 }
+
+/* ── Seção de Serviços ─────────────────────────────────────── */
+.services-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+ 
+.services-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+ 
+.services-section__count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gold, #c8a96e);
+  background: color-mix(in srgb, var(--gold, #c8a96e) 12%, transparent);
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+}
+ 
+.field-label--error {
+  color: var(--red-light, #f87171);
+}
+ 
+.field-label--required-mark {
+  color: var(--red-light, #f87171);
+  margin-left: 2px;
+}
+ 
+/* Lista dos serviços adicionados */
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: color-mix(in srgb, var(--bg-card, #1a1a1a) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border, #333) 80%, transparent);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+ 
+.service-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--gold, #c8a96e) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold, #c8a96e) 20%, transparent);
+  transition: background 0.15s;
+}
+ 
+.service-row:hover {
+  background: color-mix(in srgb, var(--gold, #c8a96e) 10%, transparent);
+}
+ 
+.service-row__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #888);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+ 
+.service-row__remove:hover {
+  color: var(--red-light, #f87171);
+  background: color-mix(in srgb, var(--red-light, #f87171) 12%, transparent);
+}
+ 
+.service-row__name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #f0f0f0);
+}
+ 
+.service-row__name .ti {
+  color: var(--gold, #c8a96e);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+ 
+.service-row__price {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gold, #c8a96e);
+  white-space: nowrap;
+}
+ 
+.services-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.5rem 0.1rem;
+  margin-top: 0.15rem;
+  border-top: 1px dashed color-mix(in srgb, var(--border, #333) 60%, transparent);
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
+ 
+.services-subtotal .subtotal-valor {
+  font-weight: 600;
+  color: var(--text-secondary, #bbb);
+}
+ 
+/* Linha de adição de serviço */
+.services-add-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+ 
+.services-add-select {
+  flex: 1;
+  min-width: 0;
+}
+ 
+.services-add-price {
+  width: 7rem;
+  flex-shrink: 0;
+}
+ 
+.services-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.9rem;
+  background: color-mix(in srgb, var(--gold, #c8a96e) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold, #c8a96e) 40%, transparent);
+  color: var(--gold, #c8a96e);
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+ 
+.services-add-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--gold, #c8a96e) 25%, transparent);
+  border-color: var(--gold, #c8a96e);
+}
+ 
+.services-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
  
 
 /* ================================================================
@@ -659,6 +820,24 @@
 @media (max-width: 480px) {
   .catalog-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .services-add-row {
+    flex-wrap: wrap;
+  }
+ 
+  .services-add-select {
+    flex: 1 1 100%;
+  }
+ 
+  .services-add-price {
+    flex: 1;
+    width: auto;
+  }
+ 
+  .services-add-btn {
+    flex: 1;
+    justify-content: center;
   }
 }
 
