@@ -49,8 +49,12 @@
   text-decoration: none;
   transition: opacity 0.2s;
 }
-.dash-header__brand:hover { opacity: 0.8; }
-.dash-header__brand i { font-size: 18px; }
+.dash-header__brand:hover {
+  opacity: 0.8;
+}
+.dash-header__brand i {
+  font-size: 18px;
+}
 
 .dash-header__right {
   display: flex;
@@ -108,7 +112,9 @@
   border-color: rgba(201, 168, 76, 0.5);
   color: var(--gold);
 }
-.dash-logout-btn i { font-size: 15px; }
+.dash-logout-btn i {
+  font-size: 15px;
+}
 
 /* Botão hambúrguer — visível só em mobile */
 .dash-header__menu-btn {
@@ -164,12 +170,12 @@
   backdrop-filter: blur(2px);
   z-index: 150;
   opacity: 0;
-  pointer-events: none;   /* invisível e não bloqueia cliques */
+  pointer-events: none; /* invisível e não bloqueia cliques */
   transition: opacity 0.25s ease;
 }
 .sidebar-overlay.is-open {
   opacity: 1;
-  pointer-events: auto;   /* passa a interceptar cliques */
+  pointer-events: auto; /* passa a interceptar cliques */
 }
 
 /* ─── Sidebar ─────────────────────────────────── */
@@ -183,14 +189,23 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-bottom: 24px;
-  transition: width 0.22s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    width 0.22s ease,
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
 /* Scrollbar fina */
-.dash-sidebar::-webkit-scrollbar { width: 3px; }
-.dash-sidebar::-webkit-scrollbar-track { background: transparent; }
-.dash-sidebar::-webkit-scrollbar-thumb { background: rgba(201, 168, 76, 0.15); border-radius: 2px; }
+.dash-sidebar::-webkit-scrollbar {
+  width: 3px;
+}
+.dash-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dash-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(201, 168, 76, 0.15);
+  border-radius: 2px;
+}
 
 .sidebar__section-title {
   padding: 20px 22px 8px;
@@ -225,7 +240,10 @@
   overflow: hidden;
   min-height: 44px; /* tap target mínimo */
 }
-.sidebar__item i { font-size: 18px; flex-shrink: 0; }
+.sidebar__item i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
 .sidebar__item:hover {
   color: rgba(255, 255, 255, 0.65);
   background: rgba(255, 255, 255, 0.02);
@@ -243,7 +261,10 @@
 }
 
 /* Resumo */
-.sidebar__summary { padding: 8px 22px; overflow: hidden; }
+.sidebar__summary {
+  padding: 8px 22px;
+  overflow: hidden;
+}
 .sidebar__summary-label {
   font-size: 9px;
   letter-spacing: 2px;
@@ -258,7 +279,9 @@
   color: var(--gold);
   line-height: 1;
 }
-.sidebar__summary-value--md { font-size: 20px; }
+.sidebar__summary-value--md {
+  font-size: 20px;
+}
 .sidebar__summary-sub {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.2);
@@ -283,7 +306,9 @@
   transition: background 0.15s;
   min-height: 44px;
 }
-.sidebar__barber:hover { background: rgba(255, 255, 255, 0.03); }
+.sidebar__barber:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
 
 .sidebar__barber__info {
   flex: 1;
@@ -320,14 +345,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   font-size: 14px;
   flex-shrink: 0;
   opacity: 0;
   min-width: 32px;
   min-height: 32px;
 }
-.sidebar__barber:hover .sidebar__barber__remove { opacity: 1; }
+.sidebar__barber:hover .sidebar__barber__remove {
+  opacity: 1;
+}
 .sidebar__barber__remove:hover {
   color: #ff8080;
   background: rgba(220, 60, 60, 0.1);
@@ -353,7 +382,10 @@
   white-space: nowrap;
   overflow: hidden;
 }
-.sidebar__add-barber i { font-size: 16px; flex-shrink: 0; }
+.sidebar__add-barber i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
 .sidebar__add-barber:hover {
   border-color: rgba(201, 168, 76, 0.5);
   color: var(--gold);
@@ -415,11 +447,20 @@
   border-radius: 3px;
   animation: fadeSlideIn 0.3s ease both;
 }
-.toast-success i { font-size: 18px; flex-shrink: 0; }
+.toast-success i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
 
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Modal backdrop ──────────────────────────── */
@@ -437,8 +478,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ─── Modal card ──────────────────────────────── */
@@ -447,21 +492,25 @@
   background: #0e0e0e;
   border: 1px solid rgba(201, 168, 76, 0.18);
   width: 100%;
-  max-width: 420px;
+  max-width: 560px;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
 .modal-card::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: 0; left: 15%; right: 15%;
+  top: 0;
+  left: 15%;
+  right: 15%;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
-.modal-card--sm { max-width: 360px; }
+.modal-card--sm {
+  max-width: 360px;
+}
 
 /* ─── Modal header ────────────────────────────── */
 .modal-header {
@@ -519,7 +568,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   flex-shrink: 0;
   min-width: 36px;
   min-height: 36px;
@@ -583,7 +634,9 @@
   font-weight: 600;
 }
 
-.modal-field--error .modal-field__label { color: rgba(255, 120, 120, 0.85); }
+.modal-field--error .modal-field__label {
+  color: rgba(255, 120, 120, 0.85);
+}
 
 .modal-field__wrapper {
   position: relative;
@@ -604,7 +657,9 @@
   color: rgba(201, 168, 76, 0.6);
 }
 
-.modal-field--error .modal-field__icon { color: rgba(255, 120, 120, 0.5); }
+.modal-field--error .modal-field__icon {
+  color: rgba(255, 120, 120, 0.5);
+}
 
 .modal-field__input {
   width: 100%;
@@ -614,7 +669,10 @@
   padding: 12px 40px 12px 38px;
   font-size: 13px;
   outline: none;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
   border-radius: 3px;
   /* Evita zoom em iOS ao focar input com font-size < 16px */
   font-size: max(16px, 13px);
@@ -628,6 +686,9 @@
   border-color: rgba(201, 168, 76, 0.5);
   background: rgba(201, 168, 76, 0.03);
   box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.07);
+  background-color: var(--gray-2);
+  border-color: rgba(201, 168, 76, 0.35);
+  color: var(--white);
 }
 .modal-field--error .modal-field__input {
   border-color: rgba(220, 80, 80, 0.45);
@@ -636,7 +697,9 @@
   border-color: rgba(220, 80, 80, 0.65);
   box-shadow: 0 0 0 3px rgba(220, 80, 80, 0.07);
 }
-.modal-field__input::placeholder { color: rgba(255, 255, 255, 0.15); }
+.modal-field__input::placeholder {
+  color: rgba(255, 255, 255, 0.15);
+}
 
 .modal-field__toggle {
   position: absolute;
@@ -655,7 +718,9 @@
   min-height: 32px;
   justify-content: center;
 }
-.modal-field__toggle:hover { color: rgba(201, 168, 76, 0.8); }
+.modal-field__toggle:hover {
+  color: rgba(201, 168, 76, 0.8);
+}
 
 .modal-field__hint {
   font-size: 11px;
@@ -671,7 +736,10 @@
   line-height: 1.6;
   margin: 0;
 }
-.modal-confirm__text strong { color: var(--white); font-weight: 600; }
+.modal-confirm__text strong {
+  color: var(--white);
+  font-weight: 600;
+}
 .modal-confirm__user {
   color: rgba(201, 168, 76, 0.6);
   font-size: 12px;
@@ -702,7 +770,9 @@
   min-height: 44px;
   -webkit-tap-highlight-color: transparent;
 }
-.modal-btn i { font-size: 15px; }
+.modal-btn i {
+  font-size: 15px;
+}
 
 .modal-btn--cancel {
   background: transparent;
@@ -744,12 +814,24 @@
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.spin { animation: spin 0.9s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ================================================================
    RESPONSIVIDADE
@@ -777,7 +859,9 @@
   .sidebar__section-title,
   .sidebar__summary,
   .sidebar__barbers,
-  .sidebar__add-barber { display: none; }
+  .sidebar__add-barber {
+    display: none;
+  }
 
   .sidebar__item {
     justify-content: center;
@@ -795,18 +879,28 @@
     padding: 20px 16px;
   }
 
-  .dash-header__date { display: none; }
-  .dash-header__badge { display: none; }
-  .dash-header__user-name { display: none; }
+  .dash-header__date {
+    display: none;
+  }
+  .dash-header__badge {
+    display: none;
+  }
+  .dash-header__user-name {
+    display: none;
+  }
 }
 
 /* ─── Mobile (< 640px) — sidebar drawer ──────── */
 @media (max-width: 640px) {
   /* Hambúrguer aparece */
-  .dash-header__menu-btn { display: flex; }
+  .dash-header__menu-btn {
+    display: flex;
+  }
 
   /* Sidebar vira drawer deslizante */
-  .sidebar-overlay { display: block; }
+  .sidebar-overlay {
+    display: block;
+  }
 
   .dash-body {
     height: calc(100vh - 62px);
@@ -832,10 +926,16 @@
   .sidebar__section-title,
   .sidebar__summary,
   .sidebar__barbers,
-  .sidebar__add-barber { display: flex; }
+  .sidebar__add-barber {
+    display: flex;
+  }
 
-  .sidebar__section-title { display: block; }
-  .sidebar__summary { display: block; }
+  .sidebar__section-title {
+    display: block;
+  }
+  .sidebar__summary {
+    display: block;
+  }
 
   .sidebar__item {
     justify-content: flex-start;
@@ -850,7 +950,9 @@
   }
 
   /* Sidebar remove-button sempre visível no touch */
-  .sidebar__barber__remove { opacity: 1; }
+  .sidebar__barber__remove {
+    opacity: 1;
+  }
 
   /* Main ocupa tela toda */
   .dash-main {
@@ -859,15 +961,30 @@
   }
 
   /* Header compacto */
-  .dash-header { padding: 0 16px; gap: 12px; }
-  .dash-header__right { gap: 10px; }
-  .dash-header__date { display: none; }
-  .dash-header__badge { display: none; }
-  .dash-header__user-name { display: none; }
+  .dash-header {
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .dash-header__right {
+    gap: 10px;
+  }
+  .dash-header__date {
+    display: none;
+  }
+  .dash-header__badge {
+    display: none;
+  }
+  .dash-header__user-name {
+    display: none;
+  }
 
   /* Logout vira só ícone */
-  .dash-logout-btn span { display: none; }
-  .dash-logout-btn { padding: 7px 10px; }
+  .dash-logout-btn span {
+    display: none;
+  }
+  .dash-logout-btn {
+    padding: 7px 10px;
+  }
 
   /* Modal ocupa a tela toda como bottom sheet */
   .modal-backdrop {
@@ -883,7 +1000,7 @@
     padding-top: 6px;
   }
   .modal-card::after {
-    content: '';
+    content: "";
     display: block;
     width: 36px;
     height: 4px;
@@ -907,16 +1024,28 @@
     font-size: 11px;
   }
 
-  .modal-header { padding: 16px 20px 14px; }
-  .modal-body { padding: 16px 20px; }
-  .modal-confirm__text { padding: 16px 20px; }
-  .modal-avatar-preview { padding: 14px 20px; }
+  .modal-header {
+    padding: 16px 20px 14px;
+  }
+  .modal-body {
+    padding: 16px 20px;
+  }
+  .modal-confirm__text {
+    padding: 16px 20px;
+  }
+  .modal-avatar-preview {
+    padding: 14px 20px;
+  }
 
   /* Section header mais compacto */
-  .section-header { margin-bottom: 16px; }
-  .section-header__meta { display: none; }
+  .section-header {
+    margin-bottom: 16px;
+  }
+  .section-header__meta {
+    display: none;
+  }
 
-    .modal-card {
+  .modal-card {
     max-height: 85vh;
     overflow-y: auto;
   }
@@ -933,8 +1062,17 @@
 
 /* ─── Mobile pequeno (< 380px) ────────────────── */
 @media (max-width: 380px) {
-  .dash-header__brand { font-size: 12px; letter-spacing: 2.5px; }
-  .dash-header__brand i { font-size: 16px; }
-  .dash-sidebar { width: 260px; }
-  .modal-card { border-radius: 8px 8px 0 0; }
+  .dash-header__brand {
+    font-size: 12px;
+    letter-spacing: 2.5px;
+  }
+  .dash-header__brand i {
+    font-size: 16px;
+  }
+  .dash-sidebar {
+    width: 260px;
+  }
+  .modal-card {
+    border-radius: 8px 8px 0 0;
+  }
 }

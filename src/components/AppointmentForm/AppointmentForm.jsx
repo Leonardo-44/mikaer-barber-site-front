@@ -2,11 +2,12 @@
 //  AppointmentForm.jsx — Mikael Barber
 // ============================================
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   appointmentService,
   productService,
   serviceService,
+  clientService,
 } from "../../services/api";
 import "./AppointmentForm.css";
 
@@ -17,7 +18,6 @@ const EMPTY_FORM = {
   obs: "",
 };
 const EMPTY_CONS = { name: "", price: "" };
-// Serviço "vazio" para o seletor
 const EMPTY_SERVICE_INPUT = { cut: "", price: "" };
 
 function formatPhone(value) {
@@ -31,11 +31,8 @@ function formatPhone(value) {
 
 export default function AppointmentForm({ barberName, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
-  // Lista de serviços do atendimento: [{ cut, price }]
   const [services, setServices] = useState([]);
-  // Controla o seletor de "próximo serviço a adicionar"
   const [serviceInput, setServiceInput] = useState(EMPTY_SERVICE_INPUT);
-
   const [consumables, setConsumables] = useState([]);
   const [consInput, setConsInput] = useState(EMPTY_CONS);
   const [errors, setErrors] = useState({});
@@ -45,6 +42,15 @@ export default function AppointmentForm({ barberName, onSaved }) {
   const [showCatalog, setShowCatalog] = useState(false);
   const [cuts, setCuts] = useState([]);
 
+  // ── Autocomplete de clientes ──
+  const [allClients, setAllClients] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const nameInputRef = useRef(null);
+  const suggestionsRef = useRef(null);
+
+  // ── Carrega serviços ──
   useEffect(() => {
     serviceService
       .getAll()
@@ -52,11 +58,37 @@ export default function AppointmentForm({ barberName, onSaved }) {
       .catch(() => {});
   }, []);
 
+  // ── Carrega produtos ──
   useEffect(() => {
     productService
       .getAll()
       .then((data) => setCatalogProducts(data.products || []))
       .catch(() => {});
+  }, []);
+
+  // ── Carrega clientes para autocomplete ── (estava faltando!)
+  useEffect(() => {
+    clientService
+      .getAll()
+      .then((data) => setAllClients(data.clients || []))
+      .catch(() => {});
+  }, []);
+
+  // ── Fecha sugestões ao clicar fora ──
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        nameInputRef.current &&
+        !nameInputRef.current.contains(e.target) &&
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+        setActiveSuggestion(-1);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const set = (field, value) => {
@@ -65,7 +97,58 @@ export default function AppointmentForm({ barberName, onSaved }) {
     if (apiError) setApiError("");
   };
 
-  // ── Serviços ─────────────────────────────────────────────────────────────
+  // ── Autocomplete: filtra clientes ao digitar o nome ──
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    set("clientName", value);
+
+    if (value.trim().length < 1) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setActiveSuggestion(-1);
+      return;
+    }
+
+    const filtered = allClients.filter((c) =>
+      c.name.toLowerCase().includes(value.toLowerCase()),
+    );
+    setSuggestions(filtered);
+    setShowSuggestions(filtered.length > 0);
+    setActiveSuggestion(-1);
+  };
+
+  // ── Seleciona um cliente da lista de sugestões ──
+  const selectSuggestion = (client) => {
+    setForm((prev) => ({
+      ...prev,
+      clientName: client.name,
+      clientPhone: client.phone || prev.clientPhone,
+    }));
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setActiveSuggestion(-1);
+    if (errors.clientName) setErrors((prev) => ({ ...prev, clientName: "" }));
+  };
+
+  // ── Navegação por teclado nas sugestões ──
+  const handleNameKeyDown = (e) => {
+    if (!showSuggestions) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveSuggestion((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveSuggestion((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && activeSuggestion >= 0) {
+      e.preventDefault();
+      selectSuggestion(suggestions[activeSuggestion]);
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setActiveSuggestion(-1);
+    }
+  };
+
+  // ── Serviços ──────────────────────────────────────────────────────────────
 
   const handleServiceCutChange = (e) => {
     const label = e.target.value;
@@ -86,7 +169,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
       { cut: trimmed, price: serviceInput.price || "0" },
     ]);
     setServiceInput(EMPTY_SERVICE_INPUT);
-    if (errors.services) setErrors((prev) => ({ ...prev, services: "" }));
   };
 
   const removeService = (index) =>
@@ -105,12 +187,12 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
   // ── Consumíveis ───────────────────────────────────────────────────────────
 
-  const addConsumable = (name = consInput.name, price = consInput.price) => {
-    const trimmed = name.trim();
+  const addConsumable = () => {
+    const trimmed = consInput.name.trim();
     if (!trimmed) return;
     setConsumables((prev) => [
       ...prev,
-      { name: trimmed, price: price || "0", qty: 1, productId: null },
+      { name: trimmed, price: consInput.price || "0", qty: 1, productId: null },
     ]);
     setConsInput(EMPTY_CONS);
   };
@@ -161,8 +243,8 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
   const validate = () => {
     const e = {};
+    // ✅ Serviço não é mais obrigatório — só nome do cliente
     if (!form.clientName.trim()) e.clientName = "Obrigatório";
-    if (services.length === 0) e.services = "Adicione ao menos um serviço";
     return e;
   };
 
@@ -177,16 +259,13 @@ export default function AppointmentForm({ barberName, onSaved }) {
     setApiError("");
 
     try {
-      // Mantém compatibilidade: "cut" e "servicePrice" representam o primeiro
-      // serviço; o array completo vai em "services" para o backend usar.
       const payload = {
+        barberName: barberName, // <--- ADICIONADO AQUI
         clientName: form.clientName.trim(),
         clientPhone: form.clientPhone.trim(),
-        // Primeiro serviço como campos legados (caso o backend ainda os use)
-        cut: services.map((s) => s.cut).join(" + "),
+        cut: services.length > 0 ? services.map((s) => s.cut).join(" + ") : "",
         servicePrice: servicesTotal,
         price: grandTotal.toFixed(2),
-        // Array completo de serviços
         services: services.map((s) => ({
           cut: s.cut,
           price: parseFloat(s.price || 0),
@@ -208,9 +287,14 @@ export default function AppointmentForm({ barberName, onSaved }) {
       if (stockUpdates.length > 0) {
         await Promise.all(
           stockUpdates.map(async (c) => {
-            const catalogItem = catalogProducts.find((p) => p.id === c.productId);
+            const catalogItem = catalogProducts.find(
+              (p) => p.id === c.productId,
+            );
             if (!catalogItem) return;
-            const newStock = Math.max(0, (catalogItem.stock || 0) - (c.qty || 1));
+            const newStock = Math.max(
+              0,
+              (catalogItem.stock || 0) - (c.qty || 1),
+            );
             try {
               await productService.update(c.productId, {
                 ...catalogItem,
@@ -245,7 +329,8 @@ export default function AppointmentForm({ barberName, onSaved }) {
     }
   };
 
-  const isValid = form.clientName.trim() && services.length > 0 && !saving;
+  // ✅ isValid: só exige nome do cliente agora
+  const isValid = form.clientName.trim() && !saving;
 
   return (
     <div className="appt-form-card fade-in">
@@ -258,26 +343,66 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
       {/* ── Dados do cliente ── */}
       <div className="form-row">
-        <div>
+        <div style={{ position: "relative" }}>
           <label className="field-label field-label--required" htmlFor="f-name">
             <i className="ti ti-user" aria-hidden="true" />
             Nome do Cliente
           </label>
           <input
             id="f-name"
+            ref={nameInputRef}
             className={`field-input${errors.clientName ? " error" : ""}`}
             type="text"
             placeholder="Ex: João Silva"
             value={form.clientName}
-            onChange={(e) => set("clientName", e.target.value)}
+            onChange={handleNameChange}
+            onKeyDown={handleNameKeyDown}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowSuggestions(true);
+            }}
             autoComplete="off"
             aria-required="true"
             aria-invalid={!!errors.clientName}
+            aria-autocomplete="list"
+            aria-expanded={showSuggestions}
           />
           {errors.clientName && (
             <span className="field-error" role="alert">
               {errors.clientName}
             </span>
+          )}
+
+          {/* ── Lista de sugestões ── */}
+          {showSuggestions && suggestions.length > 0 && (
+            <ul
+              ref={suggestionsRef}
+              className="client-suggestions"
+              role="listbox"
+              aria-label="Clientes encontrados"
+            >
+              {suggestions.map((client, idx) => (
+                <li
+                  key={client.id}
+                  className={`client-suggestions__item${activeSuggestion === idx ? " client-suggestions__item--active" : ""}`}
+                  role="option"
+                  aria-selected={activeSuggestion === idx}
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // evita blur antes do click
+                    selectSuggestion(client);
+                  }}
+                >
+                  <span className="client-suggestions__name">
+                    <i className="ti ti-user" aria-hidden="true" />
+                    {client.name}
+                  </span>
+                  {client.phone && (
+                    <span className="client-suggestions__phone">
+                      {client.phone}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
@@ -301,10 +426,10 @@ export default function AppointmentForm({ barberName, onSaved }) {
       {/* ── Serviços ── */}
       <div className="services-section">
         <div className="services-section__header">
-          <div className={`field-label${errors.services ? " field-label--error" : ""}`}>
+          {/* ✅ Removido o asterisco de obrigatório */}
+          <div className="field-label">
             <i className="ti ti-scissors" aria-hidden="true" />
             Serviços
-            <span className="field-label--required-mark"> *</span>
           </div>
           {services.length > 0 && (
             <span className="services-section__count">
@@ -313,7 +438,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
           )}
         </div>
 
-        {/* Lista de serviços adicionados */}
         {services.length > 0 && (
           <div className="services-list">
             {services.map((s, i) => (
@@ -338,16 +462,17 @@ export default function AppointmentForm({ barberName, onSaved }) {
             {services.length > 1 && (
               <div className="services-subtotal">
                 <span>Subtotal serviços:</span>
-                <span className="subtotal-valor">R$ {servicesTotal.toFixed(2)}</span>
+                <span className="subtotal-valor">
+                  R$ {servicesTotal.toFixed(2)}
+                </span>
               </div>
             )}
           </div>
         )}
 
-        {/* Seletor para adicionar serviço */}
         <div className="services-add-row">
           <select
-            className={`field-select services-add-select${errors.services ? " error" : ""}`}
+            className="field-select services-add-select"
             value={serviceInput.cut}
             onChange={handleServiceCutChange}
             aria-label="Selecionar serviço"
@@ -390,12 +515,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
             <span>Adicionar</span>
           </button>
         </div>
-
-        {errors.services && (
-          <span className="field-error" role="alert">
-            {errors.services}
-          </span>
-        )}
       </div>
 
       {/* ── Status ── */}
@@ -465,10 +584,18 @@ export default function AppointmentForm({ barberName, onSaved }) {
                   </span>
                   <span className="catalog-product-btn__stock-row">
                     {outOfStock ? (
-                      <span className="catalog-product-btn__out">sem estoque</span>
+                      <span className="catalog-product-btn__out">
+                        sem estoque
+                      </span>
                     ) : p.stock <= 2 ? (
-                      <span className="catalog-product-btn__low" title="Estoque baixo">
-                        <i className="ti ti-alert-triangle" aria-hidden="true" />
+                      <span
+                        className="catalog-product-btn__low"
+                        title="Estoque baixo"
+                      >
+                        <i
+                          className="ti ti-alert-triangle"
+                          aria-hidden="true"
+                        />
                         {p.stock} restante{p.stock !== 1 ? "s" : ""}
                       </span>
                     ) : (
@@ -503,7 +630,10 @@ export default function AppointmentForm({ barberName, onSaved }) {
                   <i className="ti ti-sparkles" aria-hidden="true" />
                   {c.name}
                 </span>
-                <div className="consumable-qty" aria-label={`Quantidade de ${c.name}`}>
+                <div
+                  className="consumable-qty"
+                  aria-label={`Quantidade de ${c.name}`}
+                >
                   <button
                     className="consumable-qty__btn"
                     onClick={() => changeQty(i, -1)}
@@ -544,7 +674,9 @@ export default function AppointmentForm({ barberName, onSaved }) {
             className="consumables-add-input consumables-add-input--name"
             placeholder="Nome do produto..."
             value={consInput.name}
-            onChange={(e) => setConsInput((p) => ({ ...p, name: e.target.value }))}
+            onChange={(e) =>
+              setConsInput((p) => ({ ...p, name: e.target.value }))
+            }
             onKeyDown={(e) => e.key === "Enter" && addConsumable()}
             aria-label="Nome do consumível"
           />
@@ -555,11 +687,17 @@ export default function AppointmentForm({ barberName, onSaved }) {
             min="0"
             step="0.50"
             value={consInput.price}
-            onChange={(e) => setConsInput((p) => ({ ...p, price: e.target.value }))}
+            onChange={(e) =>
+              setConsInput((p) => ({ ...p, price: e.target.value }))
+            }
             onKeyDown={(e) => e.key === "Enter" && addConsumable()}
             aria-label="Preço do consumível"
           />
-          <button className="consumables-add-btn" onClick={() => addConsumable()}>
+          <button
+            type="button"
+            className="consumables-add-btn"
+            onClick={addConsumable}
+          >
             <i className="ti ti-plus" aria-hidden="true" />
             <span>Adicionar</span>
           </button>

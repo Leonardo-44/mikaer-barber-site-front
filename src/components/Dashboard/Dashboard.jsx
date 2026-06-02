@@ -12,6 +12,7 @@ import AppointmentList from "../AppointmentList/AppointmentList";
 import ProductList from "../ProductList/ProductList";
 import FinanceiroScreen from "../FinanceiroScreen/FinanceiroScreen";
 import ServiceManager from "../ServiceManager/ServiceManager";
+import ClientList from "../ClientList/ClientList"; // ✅ importado
 import "./Dashboard.css";
 
 const INITIAL_BARBERS = [];
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { id: "produtos", label: "Produtos", icon: "ti-package", adminOnly: false },
   { id: "novo", label: "Novo Atendimento", icon: "ti-plus", adminOnly: false },
   { id: "lista", label: "Agendamentos", icon: "ti-calendar", adminOnly: false },
+  { id: "clientes", label: "Clientes", icon: "ti-users", adminOnly: false }, // ✅ adicionado
   {
     id: "financeiro",
     label: "Financeiro",
@@ -121,7 +123,6 @@ function BarberModal({ onClose, onSave }) {
 
     setLoading(true);
     try {
-      // ✅ Chama o backend de verdade
       const data = await authService.createBarber({
         name: form.name.trim(),
         username: form.username.trim(),
@@ -135,7 +136,6 @@ function BarberModal({ onClose, onSave }) {
         },
       );
     } catch (err) {
-      // Mostra erro dentro do modal (ex: usuário já existe)
       setErrors({ username: err.message || "Erro ao criar barbeiro" });
     } finally {
       setLoading(false);
@@ -345,7 +345,6 @@ export default function Dashboard() {
     .filter((a) => a.status === "done")
     .reduce((sum, a) => sum + parseFloat(a.total_price || a.price || 0), 0);
 
-  // ── Busca agendamentos do backend ao montar ──
   useEffect(() => {
     appointmentService
       .getAll(isAdmin)
@@ -363,9 +362,8 @@ export default function Dashboard() {
       .getBarbers()
       .then((data) => setBarbers(data.barbers || []))
       .catch(() => fireToast("Erro ao carregar barbeiros."));
-  }, [isAdmin]); // 👈 adiciona isAdmin como dependência
+  }, [isAdmin]);
 
-  // ── Fecha drawer ao pressionar Escape ──
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Escape" && sidebarOpen) setSidebarOpen(false);
@@ -378,7 +376,6 @@ export default function Dashboard() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // ── Bloqueia scroll enquanto drawer está aberto ──
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
     return () => {
@@ -399,14 +396,12 @@ export default function Dashboard() {
     setTimeout(() => setShowToast(false), 3500);
   };
 
-  // ── Salva no backend e atualiza estado local ──
   const handleSaved = (appointment) => {
     setAppointments((prev) => [appointment, ...prev]);
     fireToast("Atendimento registrado com sucesso!");
     setTab("lista");
   };
 
-  // ── Remove no backend e atualiza estado local ──
   const handleDelete = async (id) => {
     try {
       await appointmentService.remove(id);
@@ -416,7 +411,6 @@ export default function Dashboard() {
     }
   };
 
-  // ── Atualiza status no backend e no estado local ──
   const handleStatusChange = async (id, newStatus) => {
     try {
       await appointmentService.update(id, { status: newStatus });
@@ -531,7 +525,6 @@ export default function Dashboard() {
       </header>
 
       <div className="dash-body">
-        {/* Overlay escurecido — clica para fechar no mobile */}
         <div
           className={`sidebar-overlay${sidebarOpen ? " is-open" : ""}`}
           onClick={closeSidebar}
@@ -575,7 +568,6 @@ export default function Dashboard() {
             <div className="sidebar__summary-sub">total geral</div>
           </div>
 
-          {/* ── Equipe — apenas admin ── */}
           {isAdmin && (
             <>
               <div className="sidebar__divider" />
@@ -656,7 +648,7 @@ export default function Dashboard() {
                 loading={loadingAppts}
                 onDelete={handleDelete}
                 onStatusChange={handleStatusChange}
-                onEdit={handleEdit} // 👈
+                onEdit={handleEdit}
               />
             </>
           )}
@@ -667,6 +659,20 @@ export default function Dashboard() {
                 <h2 className="section-header__title">Produtos</h2>
               </div>
               <ProductList fireToast={fireToast} />
+            </>
+          )}
+
+          {/* ✅ Aba de Clientes */}
+          {tab === "clientes" && (
+            <>
+              <div className="section-header">
+                <h2 className="section-header__title">Clientes</h2>
+                <div className="section-header__line" aria-hidden="true" />
+                <span className="section-header__meta">
+                  Cadastro de clientes
+                </span>
+              </div>
+              <ClientList fireToast={fireToast} />
             </>
           )}
 
