@@ -241,12 +241,13 @@ export default function AppointmentForm({ barberName, onSaved }) {
 
   // ── Validação & Save ──────────────────────────────────────────────────────
 
-  const validate = () => {
-    const e = {};
-    // ✅ Serviço não é mais obrigatório — só nome do cliente
-    if (!form.clientName.trim()) e.clientName = "Obrigatório";
-    return e;
-  };
+  
+const validate = () => {
+  const e = {};
+  if (!form.clientName.trim()) e.clientName = "Obrigatório";
+  return e;
+};
+
 
   const handleSave = async () => {
     const e = validate();
@@ -329,7 +330,6 @@ export default function AppointmentForm({ barberName, onSaved }) {
     }
   };
 
-  // ✅ isValid: só exige nome do cliente agora
   const isValid = form.clientName.trim() && !saving;
 
   return (

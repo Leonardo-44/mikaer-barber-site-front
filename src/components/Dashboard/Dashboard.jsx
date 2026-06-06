@@ -413,7 +413,7 @@ export default function Dashboard() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await appointmentService.update(id, { status: newStatus });
+      await appointmentService.updateStatus(id, newStatus); // ← era .update
       setAppointments((prev) =>
         prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)),
       );
@@ -688,6 +688,7 @@ export default function Dashboard() {
               <FinanceiroScreen
                 appointments={appointments}
                 adminUsername={import.meta.env.VITE_ADMIN_USERNAME}
+                currentBarber={barber} // ← objeto { name, username }
               />
             </>
           )}

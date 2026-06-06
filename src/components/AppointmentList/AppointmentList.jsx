@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import AppointmentCard from "../AppointmentCard/AppointmentCard";
+import DeleteAppointmentModal from "../DeleteAppointmentModal/DeleteAppointmentModal";
 import "./AppointmentList.css";
 
 function normalize(a) {
@@ -25,7 +26,6 @@ function normalize(a) {
           minute: "2-digit",
         })
       : a.time || "",
-    // ISO para comparar com input[type=date]
     dateISO: a.scheduled_at
       ? new Date(a.scheduled_at).toISOString().slice(0, 10)
       : "",
@@ -33,62 +33,14 @@ function normalize(a) {
 }
 
 const FILTERS = [
-  { value: "all", label: "Todos" },
-  { value: "pending", label: "Pendentes" },
-  { value: "done", label: "Concluídos" },
+  { value: "all",       label: "Todos" },
+  { value: "pending",   label: "Pendentes" },
+  { value: "done",      label: "Concluídos" },
   { value: "cancelled", label: "Cancelados" },
 ];
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function DeleteModal({ onConfirm, onCancel }) {
-  return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => e.target === e.currentTarget && onCancel()}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="del-title"
-    >
-      <div className="modal-card modal-card--sm slide-up">
-        <div className="modal-header">
-          <div
-            className="modal-header__icon modal-header__icon--danger"
-            aria-hidden="true"
-          >
-            <i className="ti ti-trash" />
-          </div>
-          <div>
-            <h2 className="modal-header__title" id="del-title">
-              Remover atendimento
-            </h2>
-            <p className="modal-header__sub">Essa ação não pode ser desfeita</p>
-          </div>
-          <button
-            className="modal-close"
-            onClick={onCancel}
-            aria-label="Fechar"
-          >
-            <i className="ti ti-x" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="modal-divider" />
-        <p className="modal-confirm__text">
-          Tem certeza que deseja remover este atendimento permanentemente?
-        </p>
-        <div className="modal-footer">
-          <button className="modal-btn modal-btn--cancel" onClick={onCancel}>
-            Cancelar
-          </button>
-          <button className="modal-btn modal-btn--danger" onClick={onConfirm}>
-            <i className="ti ti-trash" aria-hidden="true" /> Remover
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function AppointmentList({
@@ -100,7 +52,7 @@ export default function AppointmentList({
 }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState(""); // "" = todos os dias
+  const [dateFilter, setDateFilter] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const normalized = appointments.map(normalize);
@@ -121,17 +73,12 @@ export default function AppointmentList({
     .filter((a) => a.status === "done")
     .reduce((sum, a) => sum + parseFloat(a.price || 0), 0);
 
-  // 👇 Novo: comissão 50% para o barbeiro
-  const totalBarberCommission = totalRevenue * 0.5;
-  const totalSalonRevenue = totalRevenue * 0.5;
-
   const counts = normalized.reduce((acc, a) => {
     acc[a.status] = (acc[a.status] || 0) + 1;
     return acc;
   }, {});
 
   const isToday = dateFilter === todayISO();
-
   const setToday = () =>
     setDateFilter((prev) => (prev === todayISO() ? "" : todayISO()));
 
@@ -179,11 +126,7 @@ export default function AppointmentList({
           <button
             className={`appt-today-btn${isToday ? " appt-today-btn--active" : ""}`}
             onClick={setToday}
-            title={
-              isToday
-                ? "Mostrando só hoje — clique para ver todos"
-                : "Ver só os de hoje"
-            }
+            title={isToday ? "Ver todos" : "Ver só os de hoje"}
           >
             <i className="ti ti-calendar-event" aria-hidden="true" />
             Hoje
@@ -212,15 +155,11 @@ export default function AppointmentList({
       </div>
 
       {/* ── Chips de status ── */}
-      <div
-        className="appt-filters"
-        role="group"
-        aria-label="Filtrar por status"
-      >
+      <div className="appt-filters" role="group" aria-label="Filtrar por status">
         {FILTERS.map((f) => (
           <button
             key={f.value}
-            className={`appt-filter-chip${filter === f.value ? " appt-filter-chip--active" : ""} appt-filter-chip--${f.value}`}
+            className={`appt-filter-chip appt-filter-chip--${f.value}${filter === f.value ? " appt-filter-chip--active" : ""}`}
             onClick={() => setFilter(f.value)}
             aria-pressed={filter === f.value}
           >
@@ -238,9 +177,7 @@ export default function AppointmentList({
           <i className="ti ti-filter" aria-hidden="true" />
           {isToday
             ? "Mostrando atendimentos de hoje"
-            : `Mostrando: ${new Date(
-                dateFilter + "T12:00:00",
-              ).toLocaleDateString("pt-BR", {
+            : `Mostrando: ${new Date(dateFilter + "T12:00:00").toLocaleDateString("pt-BR", {
                 weekday: "long",
                 day: "2-digit",
                 month: "long",
@@ -255,16 +192,11 @@ export default function AppointmentList({
         </div>
       )}
 
-      {/* ── Grid de cards ── */}
+      {/* ── Grid ── */}
       {filtered.length === 0 ? (
         <div className="appt-empty-state">
-          <i
-            className="ti ti-calendar-off appt-empty-state__icon"
-            aria-hidden="true"
-          />
-          <div className="appt-empty-state__title">
-            Nenhum atendimento encontrado
-          </div>
+          <i className="ti ti-calendar-off appt-empty-state__icon" aria-hidden="true" />
+          <div className="appt-empty-state__title">Nenhum atendimento encontrado</div>
           <p className="appt-empty-state__sub">
             {search || filter !== "all" || dateFilter
               ? "Tente ajustar os filtros ou a busca."
@@ -294,9 +226,7 @@ export default function AppointmentList({
           </span>
           {totalRevenue > 0 && (
             <div className="appt-list-footer__revenue">
-              <span className="appt-list-footer__revenue-label">
-                Faturamento filtrado
-              </span>
+              <span className="appt-list-footer__revenue-label">Faturamento filtrado</span>
               <span className="appt-list-footer__revenue-value">
                 R$ {totalRevenue.toFixed(2)}
               </span>
@@ -305,8 +235,9 @@ export default function AppointmentList({
         </div>
       )}
 
+      {/* ── Modal de exclusão ── */}
       {confirmDelete && (
-        <DeleteModal
+        <DeleteAppointmentModal
           onConfirm={handleDeleteConfirm}
           onCancel={() => setConfirmDelete(null)}
         />

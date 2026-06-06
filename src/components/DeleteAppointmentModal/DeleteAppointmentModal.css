@@ -1,0 +1,223 @@
+/* ============================================
+   DeleteAppointmentModal.css — Mikael Barber
+   ============================================ */
+
+/* ── Backdrop ── */
+.del-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(2px);
+  z-index: 500;
+  display: flex;
+  /* desktop: centralizado */
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: delFadeIn 0.2s ease both;
+}
+
+@keyframes delFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Card ── */
+.del-card {
+  background: #0e0e0e;
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  width: 100%;
+  max-width: 360px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  animation: delSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.del-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.5), transparent);
+}
+
+@keyframes delSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ── */
+.del-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 24px 20px;
+}
+
+.del-header__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(180, 30, 30, 0.15);
+  border: 1px solid rgba(220, 60, 60, 0.3);
+  color: #ff8080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.del-header__title {
+  font-size: 15px;
+  font-family: var(--font-display);
+  letter-spacing: 1.5px;
+  color: var(--white);
+  margin: 0 0 3px;
+}
+
+.del-header__sub {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 0;
+}
+
+.del-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+  min-width: 36px;
+  min-height: 36px;
+  -webkit-tap-highlight-color: transparent;
+}
+.del-close:hover {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Divider ── */
+.del-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Body ── */
+.del-body {
+  padding: 20px 24px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Footer ── */
+.del-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px 22px;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.del-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.18s;
+  border: 1px solid transparent;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+.del-btn i { font-size: 15px; }
+
+.del-btn--cancel {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.35);
+}
+.del-btn--cancel:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.del-btn--danger {
+  background: rgba(180, 30, 30, 0.9);
+  color: #ffcaca;
+  border-color: rgba(220, 60, 60, 0.5);
+}
+.del-btn--danger:hover {
+  background: rgba(200, 40, 40, 0.95);
+  border-color: rgba(220, 60, 60, 0.8);
+  color: #fff;
+}
+
+/* ════════════════════════════════════════════
+   MOBILE — desce do topo (igual ao EditModal)
+   ════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .del-backdrop {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .del-card {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0 0 16px 16px;
+    border: 1px solid rgba(201, 168, 76, 0.18);
+    border-top: none;
+    animation: delSlideDown 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .del-card::before {
+    display: none;
+  }
+
+  @keyframes delSlideDown {
+    from { opacity: 0; transform: translateY(-100%); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .del-footer {
+    flex-direction: column-reverse;
+    padding: 14px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    gap: 8px;
+  }
+
+  .del-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 11px;
+  }
+
+  .del-header {
+    padding: 16px 20px 14px;
+  }
+
+  .del-body {
+    padding: 16px 20px;
+  }
+}

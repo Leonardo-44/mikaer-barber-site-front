@@ -128,6 +128,10 @@
   color: var(--gold);
 }
 
+.fin-metric__value--red {
+  color: #E07070;
+}
+
 /* ── Título de seção ── */
 .fin-section-title {
   display: flex;
@@ -150,6 +154,233 @@
 
 .fin-section-title .ti {
   font-size: 15px;
+}
+
+/* ── Bloco de despesas ── */
+.fin-expense-block {
+  background: var(--black-4);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  transition: var(--transition);
+}
+
+/* Formulário de adição */
+.fin-expense-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.fin-expense-input {
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  background: var(--black-3);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.fin-expense-input::placeholder {
+  color: var(--gray-light);
+  opacity: 0.7;
+}
+
+.fin-expense-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: var(--black-5);
+}
+
+.fin-expense-input--desc {
+  flex: 1;
+  min-width: 180px;
+}
+
+.fin-expense-input--val {
+  width: 130px;
+}
+
+/* Remove arrows dos inputs number */
+.fin-expense-input--val::-webkit-inner-spin-button,
+.fin-expense-input--val::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fin-expense-input--val { -moz-appearance: textfield; }
+
+.fin-expense-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold);
+  background: var(--gold-faint);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.fin-expense-add-btn:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+
+.fin-expense-add-btn .ti {
+  font-size: 15px;
+}
+
+/* Mensagem de erro */
+.fin-expense-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #E07070;
+  margin-bottom: 0.75rem;
+  padding: 6px 10px;
+  background: var(--red-faint);
+  border: 1px solid rgba(139,26,26,0.35);
+  border-radius: var(--radius-md);
+}
+
+.fin-expense-error .ti {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Lista de despesas */
+.fin-expense-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgba(201,168,76,0.10);
+}
+
+.fin-expense-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.07);
+  transition: var(--transition);
+  gap: 8px;
+}
+
+.fin-expense-item:last-of-type {
+  border-bottom: none;
+}
+
+.fin-expense-item:hover {
+  background: var(--gold-faint);
+  margin: 0 -1.25rem;
+  padding: 9px 1.25rem;
+  border-radius: 4px;
+}
+
+.fin-expense-item__left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fin-expense-item__dot {
+  color: #E07070;
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.fin-expense-item__desc {
+  font-size: 13px;
+  color: var(--white-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fin-expense-item__date {
+  font-size: 10px;
+  color: var(--gray-light);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.fin-expense-item__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.fin-expense-item__val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #E07070;
+  white-space: nowrap;
+}
+
+.fin-expense-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(139,26,26,0.25);
+  background: var(--red-faint);
+  color: #E07070;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.fin-expense-remove-btn:hover {
+  background: rgba(178,34,34,0.3);
+  border-color: rgba(139,26,26,0.6);
+  color: #f08080;
+}
+
+.fin-expense-remove-btn .ti {
+  font-size: 14px;
+}
+
+/* Rodapé total de despesas */
+.fin-expense-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(201,168,76,0.18);
+  margin-top: 4px;
+}
+
+.fin-expense-total-row__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-light);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fin-expense-total-row__val {
+  font-size: 15px;
+  font-weight: 600;
+  color: #E07070;
 }
 
 /* ── Cards dos barbeiros ── */
@@ -336,10 +567,154 @@
   letter-spacing: 0.04em;
 }
 
+.fin-empty--sm {
+  padding: 1.5rem 1rem;
+}
+
 .fin-empty__icon {
   font-size: 30px;
   display: block;
   margin-bottom: 10px;
   color: var(--gold-dark);
   opacity: 0.5;
+}
+
+.fin-expense-qty{
+  display: flex;
+  gap: 16px;
+}
+
+/* ── Navegação de mês ── */
+.fin-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.fin-month-nav__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fin-month-nav__btn:hover:not(:disabled) {
+  background: var(--gold-faint);
+  border-color: var(--gold);
+}
+
+.fin-month-nav__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.fin-month-nav__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  min-width: 160px;
+  text-align: center;
+}
+
+/* ── Filtro por barbeiro ── */
+.fin-barber-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.fin-barber-filter__btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  background: transparent;
+  color: var(--gray-light);
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fin-barber-filter__btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-light);
+  background: var(--gold-faint);
+}
+
+.fin-barber-filter__btn--active {
+  background: var(--gold-faint);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.fin-barber-filter__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold-faint);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--gold-border);
+}
+
+/* ── Navegação de mês ── */
+.fin-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.fin-month-nav__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gold-border);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fin-month-nav__btn:hover:not(:disabled) {
+  background: var(--gold-faint);
+  border-color: var(--gold);
+}
+
+.fin-month-nav__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.fin-month-nav__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  min-width: 160px;
+  text-align: center;
 }

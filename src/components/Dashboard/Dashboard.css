@@ -2,7 +2,7 @@
    Dashboard.css — Mikael Barber (Responsivo melhorado)
    ============================================ */
 
-/* ─── Layout raiz ─────────────────────────────── */
+/* ─── Layout raiz ─────────────────────────── */
 .dashboard {
   min-height: 100vh;
   display: flex;
@@ -488,7 +488,7 @@
 
 /* ─── Modal card ──────────────────────────────── */
 .modal-card {
-  margin-top: 350px;
+  margin-bottom: 100vh;
   background: #0e0e0e;
   border: 1px solid rgba(201, 168, 76, 0.18);
   width: 100%;
@@ -986,11 +986,25 @@
     padding: 7px 10px;
   }
 
-  /* Modal ocupa a tela toda como bottom sheet */
   .modal-backdrop {
-    align-items: flex-end;
     padding: 0;
+    align-items: flex-end; /* padrão — modais pequenos ficam na base */
   }
+
+  .modal-card {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal-body {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .modal-field__input {
+    font-size: 16px; /* evita zoom no iOS */
+  }
+
   .modal-card {
     max-width: 100%;
     border-radius: 12px 12px 0 0;
