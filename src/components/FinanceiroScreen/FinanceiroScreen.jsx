@@ -6,7 +6,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { despesaService } from "../../services/api.js";
 import "./FinanceiroScreen.css";
 
-const COMMISSION = 0.5;
+const COMMISSION = 0.4;
 
 const PERIODS = [
   { value: "day",    label: "Hoje"          },
@@ -491,7 +491,7 @@ export default function FinanceiroScreen({ appointments = [], adminUsername, cur
                   <span className="fin-barber-card__row-val">R$ {b.total.toFixed(2)}</span>
                 </div>
                 <div className="fin-barber-card__row">
-                  <span className="fin-barber-card__row-label">Comissão (50%)</span>
+                  <span className="fin-barber-card__row-label">Comissão (40%)</span>
                   <span className="fin-barber-card__row-val fin-barber-card__row-val--green">
                     R$ {comm.toFixed(2)}
                   </span>
