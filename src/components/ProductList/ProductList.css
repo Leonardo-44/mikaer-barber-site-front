@@ -222,9 +222,13 @@
 
 /* Células */
 .product-name-cell {
+  vertical-align: middle;
+}
+
+.product-name-inner {
+  display: flex;
   flex-direction: column;
   gap: 2px;
-  vertical-align: middle;
 }
 
 .product-name {
@@ -261,6 +265,11 @@
 }
 
 /* Ações */
+.product-actions-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
 .product-actions {
   display: flex;
   gap: 6px;

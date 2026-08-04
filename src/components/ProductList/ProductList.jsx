@@ -414,8 +414,10 @@ export default function ProductList({ fireToast }) {
               {visible.map((p) => (
                 <tr key={p.id} className={p.stock <= 2 ? "row--low-stock" : ""}>
                   <td className="product-name-cell">
-                    <span className="product-name">{p.name}</span>
-                    <span className="product-unit">{p.unit}</span>
+                    <div className="product-name-inner">
+                      <span className="product-name">{p.name}</span>
+                      <span className="product-unit">{p.unit}</span>
+                    </div>
                   </td>
                   <td><CategoryBadge category={p.category} /></td>
                   <td className="product-price">R$ {parseFloat(p.price).toFixed(2)}</td>
@@ -427,23 +429,25 @@ export default function ProductList({ fireToast }) {
                       {p.stock}
                     </span>
                   </td>
-                  <td className="product-actions">
-                    <button
-                      className="product-action-btn"
-                      onClick={() => openEdit(p)}
-                      aria-label={`Editar ${p.name}`}
-                      title="Editar"
-                    >
-                      <i className="ti ti-edit" aria-hidden="true" />
-                    </button>
-                    <button
-                      className="product-action-btn product-action-btn--danger"
-                      onClick={() => setDeleteTarget(p)}
-                      aria-label={`Excluir ${p.name}`}
-                      title="Excluir"
-                    >
-                      <i className="ti ti-trash" aria-hidden="true" />
-                    </button>
+                  <td className="product-actions-cell">
+                    <div className="product-actions">
+                      <button
+                        className="product-action-btn"
+                        onClick={() => openEdit(p)}
+                        aria-label={`Editar ${p.name}`}
+                        title="Editar"
+                      >
+                        <i className="ti ti-edit" aria-hidden="true" />
+                      </button>
+                      <button
+                        className="product-action-btn product-action-btn--danger"
+                        onClick={() => setDeleteTarget(p)}
+                        aria-label={`Excluir ${p.name}`}
+                        title="Excluir"
+                      >
+                        <i className="ti ti-trash" aria-hidden="true" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

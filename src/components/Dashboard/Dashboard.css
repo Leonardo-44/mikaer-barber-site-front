@@ -488,7 +488,6 @@
 
 /* ─── Modal card ──────────────────────────────── */
 .modal-card {
-  margin-bottom: 100vh;
   background: #0e0e0e;
   border: 1px solid rgba(201, 168, 76, 0.18);
   width: 100%;
